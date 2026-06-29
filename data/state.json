@@ -554,7 +554,7 @@
       }
     ]
   },
-  "updated_at": "2026-06-29T21:09:37Z",
+  "updated_at": "2026-06-29T21:43:57Z",
   "refs_cache": {
     "t": "2026-06-29T21:09:37Z",
     "data": {
@@ -672,5 +672,9 @@
       "discount": 7.7,
       "approx": false
     }
-  ]
+  ],
+  "best_alert": {
+    "key": "Loaded(config):12",
+    "discount": 12.6
+  }
 }
