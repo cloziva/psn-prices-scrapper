@@ -79,6 +79,8 @@ def fetch_loaded(rates: dict, timeout: int = 30) -> dict[int, dict]:
     """{denom: {'price'(EUR), 'url', 'store':'Loaded', 'src_currency'}} para PSN Espana."""
     html = _get(LOADED_CATEGORY_URL, timeout)
     out: dict[int, dict] = {}
+    _seen_spain = 0
+    _currencies: dict[str, int] = {}
     for block in _LDJSON_RE.findall(html):
         try:
             data = json.loads(block)
@@ -92,11 +94,13 @@ def fetch_loaded(rates: dict, timeout: int = 30) -> dict[int, dict]:
                 name = item.get("name", "") or ""
                 if "(Spain)" not in name:
                     continue
+                _seen_spain += 1
                 offers = item.get("offers") or {}
                 if isinstance(offers, list):
                     offers = offers[0] if offers else {}
                 raw_price = offers.get("price") or offers.get("lowPrice")
                 src_cur = offers.get("priceCurrency") or "EUR"
+                _currencies[src_cur] = _currencies.get(src_cur, 0) + 1
                 m = _DENOM_RE.search(name)
                 if not m or raw_price is None:
                     continue
@@ -111,6 +115,8 @@ def fetch_loaded(rates: dict, timeout: int = 30) -> dict[int, dict]:
                         "store": "Loaded",
                         "src_currency": src_cur,
                     }
+    print(f"[ref] Loaded: pagina {len(html)//1024}KB, {_seen_spain} productos (Spain), "
+          f"divisas={_currencies or '∅'}, {len(out)} en EUR")
     return out
 
 
