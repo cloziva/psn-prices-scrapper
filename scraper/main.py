@@ -1,27 +1,27 @@
-"""Orquestador: scrapea Eneba, calcula el precio EFECTIVO y avisa cuando comprar.
+"""Orquestador: rankea TODAS las ofertas de saldo PSN por euro-gastado-por-euro-de-saldo
+y avisa de la MEJOR (sea la tienda o el importe que sea).
 
-Modelo de decision (comparar contra tienda de referencia):
-    base     = oferta mas barata listada en Eneba
-    tarifa   = eneba_service_fee_eur + base * service_fee_percent/100
-               (la tarifa de servicio se anade en el checkout y depende del metodo
-                de pago; con monedero Eneba suele ser 0. No es scrapeable: se configura)
-    cashback = lo que Eneba te devuelve en monedero (dato real EXACTO por producto)
-    efectivo = base + tarifa - cashback        <- coste real comparable
+Idea: no importa "si Eneba gana a Loaded en el de 100". Importa cual es el saldo PSN
+mas barato POR EURO ahora mismo. Ej.: un 50 EUR a 45 (10% desc.) es mejor compra que
+un 100 EUR a 95 (5%), aunque ahorres mas euros absolutos en el de 100.
 
-    referencia = precio FIJO de Loaded/CDKeys o Instant Gaming para ese importe
-    margen     = colchon de seguridad (por si el cashback tarda o caduca)
+Para cada oferta:  ratio = precio_efectivo / valor_nominal   (menor = mejor)
+    Eneba:        efectivo = base + tarifa_servicio - cashback
+    Loaded/IG:    efectivo = precio (tiendas de precio fijo, sin tarifa ni cashback)
+Se rankea por ratio y se avisa de las mejores.
 
-    -> COMPRAR (avisar) si  efectivo <= referencia - margen
+Modos:
+  - Programado (cron): avisa solo si el mejor descuento llega a `min_discount_percent`
+    y ademas ha mejorado/cambiado respecto al ultimo aviso (anti-spam).
+  - Bajo demanda (workflow_dispatch): SIEMPRE manda el ranking actual (para "preguntar"
+    el mejor precio cuando quieras; ver README, seccion de iPhone/Atajos).
 
-Si un importe no tiene 'reference_prices' pero si 'thresholds', se usa el umbral
-absoluto (efectivo <= umbral). Si no tiene ninguno, solo se registra el precio.
-
-Anti-spam: avisa al cruzar y solo repite si el efectivo baja aun mas; si vuelve a
-subir por encima del objetivo, se rearma. El estado se guarda en data/state.json.
+Las referencias (Loaded/IG) se cachean ~45 min para no pedir de mas a esas webs.
 """
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,7 +32,7 @@ from scrape_reference import fetch_references
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "scraper" / "config.json"
 STATE_PATH = ROOT / "data" / "state.json"
-HISTORY_LIMIT = 60  # entradas de historico a conservar por importe
+REF_TTL_MIN = 45  # cada cuanto refrescar las referencias (Loaded/IG)
 
 
 def _load_json(path: Path, default):
@@ -43,179 +43,168 @@ def _load_json(path: Path, default):
 
 
 def _fmt(value: float) -> str:
-    """76.9 -> '76,90' (formato espanol)."""
     return f"{value:.2f}".replace(".", ",")
 
 
-def _effective(product: dict, pricing: dict) -> dict:
-    """Calcula el precio efectivo de un producto de Eneba."""
+def _now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _age_min(iso: str) -> float:
+    try:
+        t = datetime.strptime(iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - t).total_seconds() / 60
+    except Exception:  # noqa: BLE001
+        return 1e9
+
+
+def _eneba_effective(product: dict, pricing: dict) -> float:
     base = product["price_min"]
     fee = float(pricing.get("eneba_service_fee_eur", 0) or 0)
     fee += base * float(pricing.get("service_fee_percent", 0) or 0) / 100
-    fee = round(fee, 2)
     cashback = product.get("cashback", 0.0) or 0.0
     if not pricing.get("count_cashback", True):
         cashback = 0.0
-    efectivo = round(base + fee - cashback, 2)
-    return {"base": base, "fee": fee, "cashback": cashback, "efectivo": efectivo}
+    return round(base + fee - cashback, 2)
+
+
+def _get_references(state: dict, pricing: dict, force_fresh: bool) -> tuple[dict, str]:
+    """Devuelve ({denom(int): {price,url,store,src_currency}}, origen) con cache de REF_TTL_MIN."""
+    if not pricing.get("use_live_references", True):
+        return {}, "off"
+    cache = state.get("refs_cache") or {}
+    if (not force_fresh) and cache.get("data") and _age_min(cache.get("t", "")) < REF_TTL_MIN:
+        return {int(k): v for k, v in cache["data"].items()}, "cache"
+    try:
+        refs = fetch_references(include_instant_gaming=pricing.get("include_instant_gaming", True))
+    except Exception as exc:  # noqa: BLE001
+        print(f"[warn] referencias fallaron: {exc}")
+        if cache.get("data"):
+            return {int(k): v for k, v in cache["data"].items()}, "cache(tras fallo)"
+        return {}, "error"
+    state["refs_cache"] = {"t": _now(), "data": {str(k): v for k, v in refs.items()}}
+    return refs, "fresco"
+
+
+def _build_offers(by_denom: dict, refs: dict, fallback_refs: dict, pricing: dict) -> list[dict]:
+    offers: list[dict] = []
+    # Ofertas de Eneba (con tarifa y cashback).
+    for key, p in by_denom.items():
+        denom = int(key)
+        eff = _eneba_effective(p, pricing)
+        offers.append({"store": "Eneba", "denom": denom, "price": eff,
+                       "url": p["url"], "approx": False})
+    # Ofertas de referencia (Loaded/Instant Gaming) - precio fijo, sin tarifa ni cashback.
+    for denom, info in refs.items():
+        offers.append({"store": info["store"], "denom": int(denom), "price": info["price"],
+                       "url": info.get("url", ""), "approx": info.get("src_currency", "EUR") != "EUR"})
+    # Respaldo de config para importes sin referencia en vivo.
+    covered = {(o["store"], o["denom"]) for o in offers}
+    for k, price in fallback_refs.items():
+        denom = int(k)
+        if not any(d == denom and s != "Eneba" for s, d in covered):
+            offers.append({"store": "Loaded(config)", "denom": denom, "price": float(price),
+                           "url": "", "approx": False})
+    for o in offers:
+        o["ratio"] = round(o["price"] / o["denom"], 4)
+        o["discount"] = round((1 - o["ratio"]) * 100, 1)
+    offers.sort(key=lambda o: o["ratio"])
+    return offers
+
+
+def _format_ranking(offers: list[dict], top_n: int) -> str:
+    lines = ["Mejor saldo PSN por euro ahora:"]
+    for i, o in enumerate(offers[:top_n], 1):
+        approx = " ~aprox" if o["approx"] else ""
+        lines.append(f"{i}) {o['denom']} EUR -> {o['store']} {_fmt(o['price'])} EUR "
+                     f"(-{_fmt(o['discount'])}%){approx}")
+        if o["url"]:
+            lines.append(f"   {o['url']}")
+    return "\n".join(lines)
 
 
 def main() -> int:
     config = _load_json(CONFIG_PATH, {})
     store_url = config.get("store_url", DEFAULT_STORE_URL)
     pricing = config.get("pricing") or {}
-    margin = float(pricing.get("safety_margin_eur", 0) or 0)
-    reference_prices = {str(k): float(v) for k, v in (config.get("reference_prices") or {}).items()}
-    thresholds = {str(k): float(v) for k, v in (config.get("thresholds") or {}).items()}
+    min_disc = float(pricing.get("min_discount_percent", 8))
+    top_n = int(pricing.get("top_n", 3))
+    fallback_refs = {str(k): float(v) for k, v in (config.get("reference_prices") or {}).items()}
 
     state = _load_json(STATE_PATH, {})
-    prices_state = state.setdefault("prices", {})
-    alerts_state = state.setdefault("alerts", {})
-    history_state = state.setdefault("history", {})
-
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    on_demand = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
 
     try:
         products = fetch_prices(store_url)
-    except Exception as exc:  # noqa: BLE001 - no romper; avisar del fallo
-        print(f"[error] No se pudieron obtener los precios: {exc}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[error] No se pudieron obtener los precios de Eneba: {exc}")
         if notify.notifications_enabled():
             try:
                 notify.send("PSN scraper", f"El scraper de Eneba fallo: {exc}",
                             priority="low", tags="warning")
-            except Exception as ne:  # noqa: BLE001
-                print(f"[warn] tampoco se pudo notificar el error: {ne}")
+            except Exception:  # noqa: BLE001
+                pass
         return 1
 
-    # Quedarnos con el mas barato por importe (por si hubiera duplicados).
     by_denom: dict[str, dict] = {}
     for p in products:
         key = str(p["denom"])
         if key not in by_denom or p["price_min"] < by_denom[key]["price_min"]:
             by_denom[key] = p
 
-    # Referencias EN VIVO (Loaded/CDKeys + Instant Gaming). Si falla, se usan las de config.
-    live_refs: dict[int, dict] = {}
-    if pricing.get("use_live_references", True):
+    refs, ref_origin = _get_references(state, pricing, force_fresh=on_demand)
+    offers = _build_offers(by_denom, refs, fallback_refs, pricing)
+
+    print(f"Ofertas: {len(offers)} (referencias: {len(refs)}, origen={ref_origin})")
+    print(f"{'#':>2} {'importe':>8} {'tienda':>16} {'precio':>9} {'desc%':>7} {'aprox':>6}")
+    print("-" * 56)
+    for i, o in enumerate(offers[:max(top_n, 10)], 1):
+        print(f"{i:>2} {str(o['denom'])+'EUR':>8} {o['store']:>16} {_fmt(o['price']):>9} "
+              f"{_fmt(o['discount']):>7} {'si' if o['approx'] else '':>6}")
+
+    if not offers:
+        print("Sin ofertas.")
+        return 0
+
+    best = offers[0]
+    best_key = f"{best['store']}:{best['denom']}"
+    body = _format_ranking(offers, top_n)
+
+    sent = False
+    if on_demand:
+        # Bajo demanda: responder siempre con el ranking actual.
         try:
-            live_refs = fetch_references(
-                denoms={int(k) for k in by_denom},
-                include_instant_gaming=pricing.get("include_instant_gaming", True),
-            )
-            print(f"Referencias en vivo: {len(live_refs)} importes")
-        except Exception as exc:  # noqa: BLE001 - sin referencias en vivo usamos las de config
-            print(f"[warn] no se pudieron obtener referencias en vivo: {exc} (uso config)")
+            sent = notify.send("Precios PSN ahora", body,
+                               url=best["url"] or None, priority="default", tags="moneybag")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[warn] fallo al notificar: {exc}")
+    else:
+        # Programado: avisar solo si hay un buen chollo y ha mejorado/cambiado.
+        last = state.get("best_alert")
+        good = best["discount"] >= min_disc
+        improved = (last is None or last.get("key") != best_key
+                    or best["discount"] > float(last.get("discount", 0)) + 0.3)
+        if good and improved:
+            try:
+                if notify.send(f"Chollo PSN {best['denom']} EUR", body,
+                               url=best["url"] or None, priority="high", tags="money_with_wings"):
+                    sent = True
+                    state["best_alert"] = {"key": best_key, "discount": best["discount"]}
+            except Exception as exc:  # noqa: BLE001
+                print(f"[warn] fallo al notificar: {exc}")
+        elif not good:
+            state["best_alert"] = None  # rearmar cuando ya no hay chollo
 
-    alerts_sent = 0
-    print(f"{'importe':>8} {'base':>8} {'tarifa':>7} {'cashbk':>7} {'efectivo':>9} "
-          f"{'referen':>8} {'ahorro':>7}  estado / fuente")
-    print("-" * 92)
-
-    for key in sorted(by_denom, key=lambda k: int(k)):
-        p = by_denom[key]
-        c = _effective(p, pricing)
-        efectivo = c["efectivo"]
-
-        # Referencia: primero la EN VIVO (Loaded/IG); si no, la de config como respaldo.
-        live = live_refs.get(int(key))
-        if live:
-            reference = live["price"]
-            ref_store = live["store"]
-            ref_url = live.get("url") or None
-        else:
-            reference = reference_prices.get(key)
-            ref_store = "config" if reference is not None else None
-            ref_url = None
-        threshold = thresholds.get(key)
-
-        # Objetivo a batir por el precio efectivo.
-        if reference is not None:
-            target = round(reference - margin, 2)
-        elif threshold is not None:
-            target = threshold
-            ref_store = "umbral"
-        else:
-            target = None
-
-        savings = round(reference - efectivo, 2) if reference is not None else None
-
-        prices_state[key] = {
-            "name": p["name"],
-            "base_price": c["base"],
-            "service_fee": c["fee"],
-            "cashback": c["cashback"],
-            "cashback_percent": p.get("cashback_percent"),
-            "effective_price": efectivo,
-            "reference_price": reference,
-            "reference_store": ref_store,
-            "reference_url": ref_url,
-            "savings_vs_reference": savings,
-            "currency": p["currency"],
-            "url": p["url"],
-            "merchant": p["merchant"],
-            "updated_at": now,
-        }
-        hist = history_state.setdefault(key, [])
-        if not hist or hist[-1].get("p") != efectivo:
-            hist.append({"t": now, "p": efectivo, "base": c["base"]})
-            if len(hist) > HISTORY_LIMIT:
-                del hist[:-HISTORY_LIMIT]
-
-        # Decision + aviso (con anti-spam).
-        if target is None:
-            status = "(sin referencia)"
-        else:
-            is_deal = efectivo <= target
-            last_alerted = alerts_state.get(key)
-            if is_deal and (last_alerted is None or efectivo < last_alerted):
-                if reference is not None:
-                    title = f"COMPRAR PSN {key} EUR"
-                    body = (
-                        f"Eneba {_fmt(efectivo)} EUR efectivo  <  {ref_store} {_fmt(reference)} EUR"
-                        f"  ->  ahorras {_fmt(savings)} EUR\n"
-                        f"Desglose: {_fmt(c['base'])} base + {_fmt(c['fee'])} tarifa"
-                        + (f" - {_fmt(c['cashback'])} cashback" if c["cashback"] else "")
-                        + f"\nVendedor Eneba: {p['merchant'] or 'desconocido'}\n{p['url']}"
-                    )
-                else:
-                    title = f"Chollo PSN {key} EUR"
-                    body = (
-                        f"Eneba {_fmt(efectivo)} EUR efectivo (objetivo {_fmt(target)} EUR)\n"
-                        f"Desglose: {_fmt(c['base'])} base + {_fmt(c['fee'])} tarifa"
-                        + (f" - {_fmt(c['cashback'])} cashback" if c["cashback"] else "")
-                        + f"\nVendedor: {p['merchant'] or 'desconocido'}\n{p['url']}"
-                    )
-                try:
-                    if notify.send(title, body, url=p["url"], priority="high",
-                                   tags="money_with_wings"):
-                        alerts_sent += 1
-                        alerts_state[key] = efectivo
-                        status = f"COMPRAR (<= {_fmt(target)})"
-                    else:
-                        status = "deal (notif. off)"
-                except Exception as ne:  # noqa: BLE001
-                    print(f"[warn] fallo al notificar {key} EUR: {ne}")
-                    status = "deal (fallo notif.)"
-            elif not is_deal:
-                if alerts_state.get(key) is not None:
-                    alerts_state[key] = None  # rearmar
-                status = f"esperar (obj. {_fmt(target)})"
-            else:
-                status = f"ya avisado (<= {_fmt(target)})"
-
-        print(f"{key:>6}EUR {_fmt(c['base']):>8} {_fmt(c['fee']):>7} {_fmt(c['cashback']):>7} "
-              f"{_fmt(efectivo):>9} {(_fmt(reference) if reference is not None else '-'):>8} "
-              f"{(_fmt(savings) if savings is not None else '-'):>7}  {status}"
-              f"{(' [' + ref_store + ']') if ref_store else ''}")
-
-    state["updated_at"] = now
+    state["ranking"] = [{"denom": o["denom"], "store": o["store"], "price": o["price"],
+                         "discount": o["discount"], "approx": o["approx"]} for o in offers[:top_n]]
+    state["updated_at"] = _now()
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(STATE_PATH, "w", encoding="utf-8") as fh:
         json.dump(state, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
 
-    n_ref = sum(1 for k in by_denom if int(k) in live_refs or k in reference_prices or k in thresholds)
-    print(f"\nImportes con referencia: {n_ref} de {len(by_denom)} - Alertas enviadas: {alerts_sent}")
+    print(f"\nMejor: {best['denom']} EUR en {best['store']} a {_fmt(best['price'])} EUR "
+          f"(-{_fmt(best['discount'])}%). Aviso enviado: {sent}")
     return 0
 
 
