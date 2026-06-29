@@ -1,0 +1,33 @@
+{
+  "_comment": "Vigila precios de saldo PSN (Espana) en Eneba. Edita 'thresholds' y 'pricing' a tu gusto.",
+  "store_url": "https://www.eneba.com/store/psn-gift-cards/spain",
+  "currency": "EUR",
+
+  "pricing": {
+    "_comment": "service_fee_percent: tarifa de servicio de Eneba (se anade en el checkout y depende del metodo de pago; con monedero Eneba suele ser 0). NO es scrapeable: mide la tuya una vez en el checkout y ponla aqui. count_cashback: si True, se calcula el precio neto restando el cashback. alert_on: sobre que precio se decide la alerta -> 'base' (listado), 'pay' (base+tarifa, lo que pagas) o 'net' (pagas - cashback).",
+    "service_fee_percent": 0,
+    "count_cashback": true,
+    "alert_on": "pay"
+  },
+
+  "_comment_thresholds": "Avisa cuando el precio elegido (segun alert_on) sea <= al valor indicado para ese importe. Los importes que no aparezcan se registran pero no avisan. Valores por defecto: ~5% por debajo del valor nominal; AJUSTALOS a lo que consideres chollo.",
+  "thresholds": {
+    "6": 5.70,
+    "10": 9.50,
+    "12": 11.40,
+    "15": 14.25,
+    "20": 19.00,
+    "35": 33.25,
+    "40": 38.00,
+    "45": 42.75,
+    "50": 47.50,
+    "60": 57.00,
+    "75": 71.25,
+    "80": 76.00,
+    "90": 85.50,
+    "100": 95.00,
+    "150": 142.50,
+    "200": 190.00,
+    "250": 237.50
+  }
+}
