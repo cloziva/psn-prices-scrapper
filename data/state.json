@@ -7,14 +7,14 @@
       "cashback": 0.49,
       "cashback_percent": 5,
       "effective_price": 11.56,
-      "reference_price": null,
-      "reference_store": null,
-      "reference_url": null,
-      "savings_vs_reference": null,
+      "reference_price": 9.48,
+      "reference_store": "Instant Gaming",
+      "reference_url": "https://www.instant-gaming.com/en/3567-buy-game-playstation-playstation-network-card-10e-spain/",
+      "savings_vs_reference": -2.08,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-10-eur-es-psn-key-spain",
       "merchant": "City of Games",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "18": {
       "name": "PlayStation Network Card 18 EUR (ES) PSN Key SPAIN",
@@ -23,14 +23,14 @@
       "cashback": 1.03,
       "cashback_percent": 5,
       "effective_price": 21.84,
-      "reference_price": null,
-      "reference_store": null,
+      "reference_price": 15.49,
+      "reference_store": "config",
       "reference_url": null,
-      "savings_vs_reference": null,
+      "savings_vs_reference": -6.35,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-18-eur-es-psn-key-spain",
       "merchant": "Ultimate Choice",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "20": {
       "name": "PlayStation Network Card 20 EUR (ES) PSN Key SPAIN",
@@ -39,14 +39,14 @@
       "cashback": 0.99,
       "cashback_percent": 5,
       "effective_price": 21.03,
-      "reference_price": null,
-      "reference_store": null,
-      "reference_url": null,
-      "savings_vs_reference": null,
+      "reference_price": 18.96,
+      "reference_store": "Instant Gaming",
+      "reference_url": "https://www.instant-gaming.com/en/619-buy-playstation-store-gift-card-20eur-eur20-card-playstation-4-playstation-5-game-playstation-store-spain/",
+      "savings_vs_reference": -2.07,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-20-eur-es-psn-key-spain",
       "merchant": "City of Games",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "45": {
       "name": "PlayStation Network Card 45 EUR (ES) PSN Key SPAIN",
@@ -55,14 +55,14 @@
       "cashback": 2.56,
       "cashback_percent": 5,
       "effective_price": 50.87,
-      "reference_price": null,
-      "reference_store": null,
+      "reference_price": 43.99,
+      "reference_store": "config",
       "reference_url": null,
-      "savings_vs_reference": null,
+      "savings_vs_reference": -6.88,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-45-eur-es-psn-key-spain",
       "merchant": "Gift Card Mall",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "50": {
       "name": "PlayStation Network Card 50 EUR (ES) PSN Key SPAIN",
@@ -71,14 +71,14 @@
       "cashback": 2.38,
       "cashback_percent": 5,
       "effective_price": 47.43,
-      "reference_price": 44.99,
-      "reference_store": "config",
-      "reference_url": null,
-      "savings_vs_reference": -2.44,
+      "reference_price": 47.43,
+      "reference_store": "Instant Gaming",
+      "reference_url": "https://www.instant-gaming.com/en/621-buy-playstation-network-card-50eur-50-euros-card-playstation-3-playstation-4-playstation-5-game-playstation-store-spain/",
+      "savings_vs_reference": 0.0,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-50-eur-es-psn-key-spain",
       "merchant": "City of Games",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "55": {
       "name": "PlayStation Network Card 55 EUR (IT) PSN Key SPAIN",
@@ -94,7 +94,7 @@
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-55-eur-it-psn-key-spain",
       "merchant": "Fast Delivery 24/7",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "60": {
       "name": "PlayStation Network Card 60 EUR (ES) PSN Key SPAIN",
@@ -103,14 +103,14 @@
       "cashback": 2.87,
       "cashback_percent": 5,
       "effective_price": 56.88,
-      "reference_price": null,
-      "reference_store": null,
-      "reference_url": null,
-      "savings_vs_reference": null,
+      "reference_price": 56.92,
+      "reference_store": "Instant Gaming",
+      "reference_url": "https://www.instant-gaming.com/en/12014-buy-playstation-store-gift-card-60eur-eur60-card-playstation-5-playstation-4-game-playstation-store-spain/",
+      "savings_vs_reference": 0.04,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-60-eur-es-psn-key-spain",
       "merchant": "Vikingsbrothers",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "75": {
       "name": "PlayStation Network Card 75 EUR (ES) PSN Key SPAIN",
@@ -119,30 +119,30 @@
       "cashback": 4.08,
       "cashback_percent": 5,
       "effective_price": 79.9,
-      "reference_price": null,
-      "reference_store": null,
+      "reference_price": 72.99,
+      "reference_store": "config",
       "reference_url": null,
-      "savings_vs_reference": null,
+      "savings_vs_reference": -6.91,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-75-eur-es-psn-key-spain",
       "merchant": "Gift Card Mall",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "80": {
       "name": "PlayStation Network Card 80 EUR (ES) PSN Key SPAIN",
-      "base_price": 78.31,
+      "base_price": 78.29,
       "service_fee": 2.3,
-      "cashback": 3.92,
+      "cashback": 3.91,
       "cashback_percent": 5,
-      "effective_price": 76.69,
+      "effective_price": 76.68,
       "reference_price": null,
       "reference_store": null,
       "reference_url": null,
       "savings_vs_reference": null,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-80-eur-es-psn-key-spain",
-      "merchant": "Vikingsbrothers",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "merchant": "CdKeyMarkt",
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "90": {
       "name": "PlayStation Network Card 90 EUR (ES) PSN Key SPAIN",
@@ -151,14 +151,14 @@
       "cashback": 5.62,
       "cashback_percent": 5,
       "effective_price": 109.17,
-      "reference_price": null,
-      "reference_store": null,
+      "reference_price": 88.99,
+      "reference_store": "config",
       "reference_url": null,
-      "savings_vs_reference": null,
+      "savings_vs_reference": -20.18,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-90-eur-es-psn-key-spain",
       "merchant": "Ultimate Choice",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "95": {
       "name": "PlayStation Network Card 95 EUR (IT) PSN Key SPAIN",
@@ -174,7 +174,7 @@
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-95-eur-it-psn-key-spain",
       "merchant": "Gift Card Mall",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "100": {
       "name": "PlayStation Network Card 100 EUR (ES) PSN Key SPAIN",
@@ -183,14 +183,14 @@
       "cashback": 4.74,
       "cashback_percent": 5,
       "effective_price": 92.33,
-      "reference_price": 89.99,
+      "reference_price": 94.99,
       "reference_store": "config",
       "reference_url": null,
-      "savings_vs_reference": -2.34,
+      "savings_vs_reference": 2.66,
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-100-eur-es-psn-key-spain",
       "merchant": "Keysgo Discounter ",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "150": {
       "name": "PlayStation Network Card 150 EUR (ES) PSN Key SPAIN",
@@ -206,7 +206,7 @@
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-150-eur-es-psn-key-spain",
       "merchant": "Ultimate Choice",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "200": {
       "name": "PlayStation Network Card 200 EUR (ES) PSN Key SPAIN",
@@ -222,7 +222,7 @@
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-200-eur-es-psn-key-spain",
       "merchant": "Ultimate Choice",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "250": {
       "name": "PlayStation Network Card 250 EUR (ES) PSN Key SPAIN",
@@ -238,7 +238,7 @@
       "currency": "EUR",
       "url": "https://www.eneba.com/psn-playstation-network-card-250-eur-es-psn-key-spain",
       "merchant": "Ultimate Choice",
-      "updated_at": "2026-06-29T20:43:46Z"
+      "updated_at": "2026-06-29T20:51:21Z"
     },
     "120": {
       "name": "PlayStation Network Card 120 EUR (ES) PSN Key SPAIN",
@@ -258,7 +258,7 @@
     }
   },
   "alerts": {
-    "100": null
+    "100": 92.33
   },
   "history": {
     "10": [
@@ -432,6 +432,11 @@
         "t": "2026-06-29T20:43:46Z",
         "p": 76.69,
         "base": 78.31
+      },
+      {
+        "t": "2026-06-29T20:51:21Z",
+        "p": 76.68,
+        "base": 78.29
       }
     ],
     "90": [
@@ -549,5 +554,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-29T20:43:46Z"
+  "updated_at": "2026-06-29T20:51:21Z"
 }
