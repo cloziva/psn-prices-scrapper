@@ -139,6 +139,9 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
 
         merchant = (auction.get("merchant") or {}).get("displayname")
         cashback = _cashback(auction)
+        # % de cashback del producto concreto (la PSN puede tener distinto % que un juego).
+        prod_cb = node.get("cashback")
+        cashback_percent = prod_cb.get("valuePercent") if isinstance(prod_cb, dict) else None
 
         results.append(
             {
@@ -148,6 +151,7 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
                 "currency": currency,
                 "msrp": msrp_eur,
                 "cashback": cashback,
+                "cashback_percent": cashback_percent,
                 "merchant": merchant,
                 "in_stock": bool(auction.get("isInStock")),
                 "url": PRODUCT_URL_TEMPLATE.format(slug=slug) if slug else store_url,
@@ -166,9 +170,10 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
 if __name__ == "__main__":
     # Ejecucion directa: imprime una tabla con todos los importes y su precio minimo.
     items = fetch_prices()
-    print(f"{'importe':>8} {'min EUR':>9} {'cashback':>9} {'nominal':>9}  vendedor")
-    print("-" * 66)
+    print(f"{'importe':>8} {'min EUR':>9} {'cashback':>9} {'cb%':>5} {'nominal':>8}  vendedor")
+    print("-" * 70)
     for it in items:
         msrp = f"{it['msrp']:.2f}" if it["msrp"] else "-"
-        print(f"{it['denom']:>6}EUR {it['price_min']:>9.2f} {it['cashback']:>9.2f} {msrp:>9}  {it['merchant'] or '-'}")
+        pct = f"{it['cashback_percent']}%" if it.get("cashback_percent") else "-"
+        print(f"{it['denom']:>6}EUR {it['price_min']:>9.2f} {it['cashback']:>9.2f} {pct:>5} {msrp:>8}  {it['merchant'] or '-'}")
     print(f"\nTotal importes: {len(items)}")

@@ -1,22 +1,23 @@
-"""Orquestador: scrapea Eneba, calcula el precio real y avisa por ntfy.
+"""Orquestador: scrapea Eneba, calcula el precio EFECTIVO y avisa cuando comprar.
 
-Precio real de cada importe:
-    base    = oferta mas barata listada en Eneba
-    tarifa  = base * service_fee_percent / 100   (estimada; se anade en el checkout
-              y depende del metodo de pago -> NO es scrapeable. Con monedero Eneba
-              suele ser 0. Mide la tuya una vez en el checkout y ponla en config.json)
-    pagas   = base + tarifa                       (lo que sale de tu bolsillo)
-    cashback= lo que Eneba te devuelve en monedero (dato real por oferta)
-    neto    = pagas - cashback                    (coste efectivo si gastas el cashback)
+Modelo de decision (comparar contra tienda de referencia):
+    base     = oferta mas barata listada en Eneba
+    tarifa   = eneba_service_fee_eur + base * service_fee_percent/100
+               (la tarifa de servicio se anade en el checkout y depende del metodo
+                de pago; con monedero Eneba suele ser 0. No es scrapeable: se configura)
+    cashback = lo que Eneba te devuelve en monedero (dato real EXACTO por producto)
+    efectivo = base + tarifa - cashback        <- coste real comparable
 
-La alerta se dispara segun `pricing.alert_on` (por defecto "pay" = lo que pagas).
-Cambialo a "net" si quieres que el aviso descuente el cashback, o "base" para el
-precio listado tal cual.
+    referencia = precio FIJO de Loaded/CDKeys o Instant Gaming para ese importe
+    margen     = colchon de seguridad (por si el cashback tarda o caduca)
 
-Logica anti-spam: avisa si  precio_elegido <= umbral  Y  (no se habia avisado  O
-ha bajado aun mas). Si vuelve a subir por encima del umbral, se rearma.
+    -> COMPRAR (avisar) si  efectivo <= referencia - margen
 
-El estado se guarda en data/state.json, que el workflow commitea tras cada run.
+Si un importe no tiene 'reference_prices' pero si 'thresholds', se usa el umbral
+absoluto (efectivo <= umbral). Si no tiene ninguno, solo se registra el precio.
+
+Anti-spam: avisa al cruzar y solo repite si el efectivo baja aun mas; si vuelve a
+subir por encima del objetivo, se rearma. El estado se guarda en data/state.json.
 """
 from __future__ import annotations
 
@@ -45,34 +46,25 @@ def _fmt(value: float) -> str:
     return f"{value:.2f}".replace(".", ",")
 
 
-def _compute(product: dict, pricing: dict) -> dict:
-    """Devuelve el desglose de precios de un producto segun la config de pricing."""
+def _effective(product: dict, pricing: dict) -> dict:
+    """Calcula el precio efectivo de un producto de Eneba."""
     base = product["price_min"]
-    fee_pct = float(pricing.get("service_fee_percent", 0) or 0)
-    fee = round(base * fee_pct / 100, 2)
-    pay = round(base + fee, 2)
+    fee = float(pricing.get("eneba_service_fee_eur", 0) or 0)
+    fee += base * float(pricing.get("service_fee_percent", 0) or 0) / 100
+    fee = round(fee, 2)
     cashback = product.get("cashback", 0.0) or 0.0
     if not pricing.get("count_cashback", True):
         cashback = 0.0
-    net = round(pay - cashback, 2)
-
-    mode = pricing.get("alert_on", "pay")
-    alert_price = {"base": base, "pay": pay, "net": net}.get(mode, pay)
-    return {
-        "base": base,
-        "fee": fee,
-        "pay": pay,
-        "cashback": cashback,
-        "net": net,
-        "alert_on": mode,
-        "alert_price": alert_price,
-    }
+    efectivo = round(base + fee - cashback, 2)
+    return {"base": base, "fee": fee, "cashback": cashback, "efectivo": efectivo}
 
 
 def main() -> int:
     config = _load_json(CONFIG_PATH, {})
     store_url = config.get("store_url", DEFAULT_STORE_URL)
     pricing = config.get("pricing") or {}
+    margin = float(pricing.get("safety_margin_eur", 0) or 0)
+    reference_prices = {str(k): float(v) for k, v in (config.get("reference_prices") or {}).items()}
     thresholds = {str(k): float(v) for k, v in (config.get("thresholds") or {}).items()}
 
     state = _load_json(STATE_PATH, {})
@@ -101,71 +93,94 @@ def main() -> int:
         if key not in by_denom or p["price_min"] < by_denom[key]["price_min"]:
             by_denom[key] = p
 
-    mode = pricing.get("alert_on", "pay")
     alerts_sent = 0
-    print(f"{'importe':>8} {'base':>8} {'tarifa':>7} {'cashbk':>7} {'->'+mode:>9} {'umbral':>8}  estado")
-    print("-" * 78)
+    print(f"{'importe':>8} {'base':>8} {'tarifa':>7} {'cashbk':>7} {'efectivo':>9} "
+          f"{'referen':>8} {'ahorro':>7}  estado")
+    print("-" * 86)
 
     for key in sorted(by_denom, key=lambda k: int(k)):
         p = by_denom[key]
-        c = _compute(p, pricing)
-        price = c["alert_price"]
+        c = _effective(p, pricing)
+        efectivo = c["efectivo"]
+
+        reference = reference_prices.get(key)
+        threshold = thresholds.get(key)
+
+        # Objetivo a batir por el precio efectivo.
+        if reference is not None:
+            target = round(reference - margin, 2)
+        elif threshold is not None:
+            target = threshold
+        else:
+            target = None
+
+        savings = round(reference - efectivo, 2) if reference is not None else None
 
         prices_state[key] = {
             "name": p["name"],
             "base_price": c["base"],
             "service_fee": c["fee"],
-            "pay_price": c["pay"],
             "cashback": c["cashback"],
-            "net_price": c["net"],
-            "alert_on": c["alert_on"],
-            "alert_price": price,
+            "cashback_percent": p.get("cashback_percent"),
+            "effective_price": efectivo,
+            "reference_price": reference,
+            "savings_vs_reference": savings,
             "currency": p["currency"],
             "url": p["url"],
             "merchant": p["merchant"],
             "updated_at": now,
         }
         hist = history_state.setdefault(key, [])
-        if not hist or hist[-1].get("p") != price:
-            hist.append({"t": now, "p": price, "base": c["base"]})
+        if not hist or hist[-1].get("p") != efectivo:
+            hist.append({"t": now, "p": efectivo, "base": c["base"]})
             if len(hist) > HISTORY_LIMIT:
                 del hist[:-HISTORY_LIMIT]
 
-        threshold = thresholds.get(key)
-        status = "(sin umbral)"
-
-        if threshold is not None:
+        # Decision + aviso (con anti-spam).
+        if target is None:
+            status = "(sin referencia)"
+        else:
+            is_deal = efectivo <= target
             last_alerted = alerts_state.get(key)
-            if price <= threshold and (last_alerted is None or price < last_alerted):
-                title = f"Chollo PSN {key} EUR"
-                body = (
-                    f"Saldo PSN {key} EUR a {_fmt(price)} EUR (objetivo {_fmt(threshold)})\n"
-                    f"Desglose: {_fmt(c['base'])} base"
-                    + (f" + {_fmt(c['fee'])} tarifa" if c["fee"] else "")
-                    + (f" - {_fmt(c['cashback'])} cashback" if c["cashback"] else "")
-                    + f" = {_fmt(c['net'])} neto\n"
-                    f"Vendedor: {p['merchant'] or 'desconocido'}\n{p['url']}"
-                )
+            if is_deal and (last_alerted is None or efectivo < last_alerted):
+                if reference is not None:
+                    title = f"COMPRAR PSN {key} EUR"
+                    body = (
+                        f"Eneba {_fmt(efectivo)} EUR efectivo  <  referencia {_fmt(reference)} EUR"
+                        f"  ->  ahorras {_fmt(savings)} EUR\n"
+                        f"Desglose: {_fmt(c['base'])} base + {_fmt(c['fee'])} tarifa"
+                        + (f" - {_fmt(c['cashback'])} cashback" if c["cashback"] else "")
+                        + f"\nVendedor: {p['merchant'] or 'desconocido'}\n{p['url']}"
+                    )
+                else:
+                    title = f"Chollo PSN {key} EUR"
+                    body = (
+                        f"Eneba {_fmt(efectivo)} EUR efectivo (objetivo {_fmt(target)} EUR)\n"
+                        f"Desglose: {_fmt(c['base'])} base + {_fmt(c['fee'])} tarifa"
+                        + (f" - {_fmt(c['cashback'])} cashback" if c["cashback"] else "")
+                        + f"\nVendedor: {p['merchant'] or 'desconocido'}\n{p['url']}"
+                    )
                 try:
                     if notify.send(title, body, url=p["url"], priority="high",
                                    tags="money_with_wings"):
                         alerts_sent += 1
-                        alerts_state[key] = price
-                        status = f"AVISO (<= {_fmt(threshold)})"
+                        alerts_state[key] = efectivo
+                        status = f"COMPRAR (<= {_fmt(target)})"
                     else:
-                        status = "cruza umbral (notif. off)"
+                        status = "deal (notif. off)"
                 except Exception as ne:  # noqa: BLE001
                     print(f"[warn] fallo al notificar {key} EUR: {ne}")
-                    status = "cruza umbral (fallo notif.)"
-            elif price > threshold:
+                    status = "deal (fallo notif.)"
+            elif not is_deal:
                 if alerts_state.get(key) is not None:
                     alerts_state[key] = None  # rearmar
-                status = f"objetivo {_fmt(threshold)}"
+                status = f"esperar (obj. {_fmt(target)})"
             else:
-                status = f"objetivo {_fmt(threshold)} (ya avisado)"
+                status = f"ya avisado (<= {_fmt(target)})"
 
         print(f"{key:>6}EUR {_fmt(c['base']):>8} {_fmt(c['fee']):>7} {_fmt(c['cashback']):>7} "
-              f"{_fmt(price):>9} {(_fmt(threshold) if threshold else '-'):>8}  {status}")
+              f"{_fmt(efectivo):>9} {(_fmt(reference) if reference is not None else '-'):>8} "
+              f"{(_fmt(savings) if savings is not None else '-'):>7}  {status}")
 
     state["updated_at"] = now
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -173,7 +188,8 @@ def main() -> int:
         json.dump(state, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
 
-    print(f"\nImportes vigilados: {len(by_denom)} - Alertas enviadas: {alerts_sent}  (alerta sobre: {mode})")
+    print(f"\nImportes con referencia/umbral: {sum(1 for k in by_denom if k in reference_prices or k in thresholds)}"
+          f" de {len(by_denom)} - Alertas enviadas: {alerts_sent}")
     return 0
 
 

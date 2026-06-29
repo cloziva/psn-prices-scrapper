@@ -1,33 +1,22 @@
 {
-  "_comment": "Vigila precios de saldo PSN (Espana) en Eneba. Edita 'thresholds' y 'pricing' a tu gusto.",
+  "_comment": "Avisa COMPRAR cuando el precio EFECTIVO de Eneba (base + tarifa - cashback) sea mas barato que tu tienda de referencia (Loaded/CDKeys, Instant Gaming) menos un margen de seguridad. Edita 'reference_prices' y 'pricing'.",
   "store_url": "https://www.eneba.com/store/psn-gift-cards/spain",
   "currency": "EUR",
 
   "pricing": {
-    "_comment": "service_fee_percent: tarifa de servicio de Eneba (se anade en el checkout y depende del metodo de pago; con monedero Eneba suele ser 0). NO es scrapeable: mide la tuya una vez en el checkout y ponla aqui. count_cashback: si True, se calcula el precio neto restando el cashback. alert_on: sobre que precio se decide la alerta -> 'base' (listado), 'pay' (base+tarifa, lo que pagas) o 'net' (pagas - cashback).",
+    "_comment": "Eneba: eneba_service_fee_eur = tarifa de servicio FIJA (~2,30 EUR; se anade en el checkout y depende del metodo de pago, con monedero Eneba ~0). service_fee_percent = tarifa en % adicional si tu metodo de pago la cobra asi (se suma a la fija; deja 0 si no aplica). count_cashback = usa el cashback EXACTO por producto que scrapea el bot. safety_margin_eur = cuanto mas barato debe ser Eneba que la referencia para avisar (cubre que el cashback tarde o caduque).",
+    "eneba_service_fee_eur": 2.30,
     "service_fee_percent": 0,
     "count_cashback": true,
-    "alert_on": "pay"
+    "safety_margin_eur": 1.50
   },
 
-  "_comment_thresholds": "Avisa cuando el precio elegido (segun alert_on) sea <= al valor indicado para ese importe. Los importes que no aparezcan se registran pero no avisan. Valores por defecto: ~5% por debajo del valor nominal; AJUSTALOS a lo que consideres chollo.",
-  "thresholds": {
-    "6": 5.70,
-    "10": 9.50,
-    "12": 11.40,
-    "15": 14.25,
-    "20": 19.00,
-    "35": 33.25,
-    "40": 38.00,
-    "45": 42.75,
-    "50": 47.50,
-    "60": 57.00,
-    "75": 71.25,
-    "80": 76.00,
-    "90": 85.50,
-    "100": 95.00,
-    "150": 142.50,
-    "200": 190.00,
-    "250": 237.50
-  }
+  "_comment_reference": "Precio FIJO de tu tienda de referencia (Loaded/CDKeys o Instant Gaming) por importe, en EUR. Solo se vigilan/avisan los importes que pongas aqui. Anade los que te interesen (puedo ayudarte a sacar los precios de Loaded/Instant Gaming, o incluso scrapearlos automaticamente mas adelante).",
+  "reference_prices": {
+    "50": 44.99,
+    "100": 89.99
+  },
+
+  "_comment_thresholds": "OPCIONAL: umbral absoluto en EUR sobre el precio efectivo, para importes que NO tengan precio de referencia. Avisa si efectivo <= valor. Deja {} si no lo usas.",
+  "thresholds": {}
 }
