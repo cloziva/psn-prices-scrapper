@@ -554,9 +554,9 @@
       }
     ]
   },
-  "updated_at": "2026-06-29T22:41:50Z",
+  "updated_at": "2026-06-29T23:42:05Z",
   "refs_cache": {
-    "t": "2026-06-29T22:41:50Z",
+    "t": "2026-06-29T23:42:05Z",
     "data": {
       "5": {
         "price": 4.73,
@@ -568,12 +568,6 @@
         "price": 5.95,
         "url": "https://www.loaded.com/playstation-network-psn-card-6-eur-spain-cd-key",
         "store": "Loaded",
-        "src_currency": "USD"
-      },
-      "10": {
-        "price": 9.5,
-        "url": "https://www.instant-gaming.com/en/3567-buy-game-playstation-playstation-network-card-10e-spain/",
-        "store": "Instant Gaming",
         "src_currency": "USD"
       },
       "12": {
@@ -598,18 +592,6 @@
         "price": 19.03,
         "url": "https://www.instant-gaming.com/en/619-buy-playstation-store-gift-card-20eur-eur20-card-playstation-4-playstation-5-game-playstation-store-spain/",
         "store": "Instant Gaming",
-        "src_currency": "USD"
-      },
-      "25": {
-        "price": 22.7,
-        "url": "https://www.loaded.com/playstation-network-psn-card-25eur-spain-cd-key",
-        "store": "Loaded",
-        "src_currency": "USD"
-      },
-      "30": {
-        "price": 28.57,
-        "url": "https://www.loaded.com/playstation-network-psn-card-30-eur-spain",
-        "store": "Loaded",
         "src_currency": "USD"
       },
       "35": {
@@ -665,16 +647,22 @@
         "url": "https://www.loaded.com/playstation-network-psn-card-120-eur-spain",
         "store": "Loaded",
         "src_currency": "USD"
+      },
+      "10": {
+        "price": 9.5,
+        "url": "https://www.instant-gaming.com/en/3567-buy-game-playstation-playstation-network-card-10e-spain/",
+        "store": "Instant Gaming",
+        "src_currency": "USD"
       }
     }
   },
   "ranking": [
     {
       "denom": 25,
-      "store": "Loaded",
-      "price": 22.7,
-      "discount": 9.2,
-      "approx": true
+      "store": "Loaded(config)",
+      "price": 22.49,
+      "discount": 10.0,
+      "approx": false
     },
     {
       "denom": 12,
@@ -692,7 +680,7 @@
     }
   ],
   "best_alert": {
-    "key": "Loaded:25",
-    "discount": 9.2
+    "key": "Loaded(config):25",
+    "discount": 10.0
   }
 }
