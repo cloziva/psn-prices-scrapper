@@ -99,7 +99,8 @@ def main() -> int:
     if pricing.get("use_live_references", True):
         try:
             live_refs = fetch_references(
-                include_instant_gaming=pricing.get("include_instant_gaming", True)
+                denoms={int(k) for k in by_denom},
+                include_instant_gaming=pricing.get("include_instant_gaming", True),
             )
             print(f"Referencias en vivo: {len(live_refs)} importes")
         except Exception as exc:  # noqa: BLE001 - sin referencias en vivo usamos las de config
