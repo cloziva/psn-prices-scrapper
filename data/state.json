@@ -1,5 +1,323 @@
 {
-  "prices": {},
+  "prices": {
+    "10": {
+      "name": "PlayStation Network Card 10 EUR (ES) PSN Key SPAIN",
+      "base_price": 11.34,
+      "service_fee": 0.0,
+      "pay_price": 11.34,
+      "cashback": 0.57,
+      "net_price": 10.77,
+      "alert_on": "pay",
+      "alert_price": 11.34,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-10-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "18": {
+      "name": "PlayStation Network Card 18 EUR (ES) PSN Key SPAIN",
+      "base_price": 23.45,
+      "service_fee": 0.0,
+      "pay_price": 23.45,
+      "cashback": 1.17,
+      "net_price": 22.28,
+      "alert_on": "pay",
+      "alert_price": 23.45,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-18-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "20": {
+      "name": "PlayStation Network Card 20 EUR (ES) PSN Key SPAIN",
+      "base_price": 22.52,
+      "service_fee": 0.0,
+      "pay_price": 22.52,
+      "cashback": 1.13,
+      "net_price": 21.39,
+      "alert_on": "pay",
+      "alert_price": 22.52,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-20-eur-es-psn-key-spain",
+      "merchant": "Vikingsbrothers",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "45": {
+      "name": "PlayStation Network Card 45 EUR (ES) PSN Key SPAIN",
+      "base_price": 58.29,
+      "service_fee": 0.0,
+      "pay_price": 58.29,
+      "cashback": 2.91,
+      "net_price": 55.38,
+      "alert_on": "pay",
+      "alert_price": 58.29,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-45-eur-es-psn-key-spain",
+      "merchant": "Gift Card Mall",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "50": {
+      "name": "PlayStation Network Card 50 EUR (ES) PSN Key SPAIN",
+      "base_price": 54.29,
+      "service_fee": 0.0,
+      "pay_price": 54.29,
+      "cashback": 2.71,
+      "net_price": 51.58,
+      "alert_on": "pay",
+      "alert_price": 54.29,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-50-eur-es-psn-key-spain",
+      "merchant": "Instant-Codes",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "55": {
+      "name": "PlayStation Network Card 55 EUR (IT) PSN Key SPAIN",
+      "base_price": 68.86,
+      "service_fee": 0.0,
+      "pay_price": 68.86,
+      "cashback": 3.44,
+      "net_price": 65.42,
+      "alert_on": "pay",
+      "alert_price": 68.86,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-55-eur-it-psn-key-spain",
+      "merchant": "Fast Delivery 24/7",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "60": {
+      "name": "PlayStation Network Card 60 EUR (ES) PSN Key SPAIN",
+      "base_price": 65.5,
+      "service_fee": 0.0,
+      "pay_price": 65.5,
+      "cashback": 3.28,
+      "net_price": 62.22,
+      "alert_on": "pay",
+      "alert_price": 65.5,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-60-eur-es-psn-key-spain",
+      "merchant": "Vikingsbrothers",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "75": {
+      "name": "PlayStation Network Card 75 EUR (ES) PSN Key SPAIN",
+      "base_price": 93.12,
+      "service_fee": 0.0,
+      "pay_price": 93.12,
+      "cashback": 4.66,
+      "net_price": 88.46,
+      "alert_on": "pay",
+      "alert_price": 93.12,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-75-eur-es-psn-key-spain",
+      "merchant": "Gift Card Mall",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "80": {
+      "name": "PlayStation Network Card 80 EUR (ES) PSN Key SPAIN",
+      "base_price": 89.28,
+      "service_fee": 0.0,
+      "pay_price": 89.28,
+      "cashback": 4.46,
+      "net_price": 84.82,
+      "alert_on": "pay",
+      "alert_price": 89.28,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-80-eur-es-psn-key-spain",
+      "merchant": "Vikingsbrothers",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "90": {
+      "name": "PlayStation Network Card 90 EUR (ES) PSN Key SPAIN",
+      "base_price": 128.25,
+      "service_fee": 0.0,
+      "pay_price": 128.25,
+      "cashback": 6.41,
+      "net_price": 121.84,
+      "alert_on": "pay",
+      "alert_price": 128.25,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-90-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "95": {
+      "name": "PlayStation Network Card 95 EUR (IT) PSN Key SPAIN",
+      "base_price": 135.39,
+      "service_fee": 0.0,
+      "pay_price": 135.39,
+      "cashback": 6.77,
+      "net_price": 128.62,
+      "alert_on": "pay",
+      "alert_price": 135.39,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-95-eur-it-psn-key-spain",
+      "merchant": "Gift Card Mall",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "100": {
+      "name": "PlayStation Network Card 100 EUR (ES) PSN Key SPAIN",
+      "base_price": 108.05,
+      "service_fee": 0.0,
+      "pay_price": 108.05,
+      "cashback": 5.4,
+      "net_price": 102.65,
+      "alert_on": "pay",
+      "alert_price": 108.05,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-100-eur-es-psn-key-spain",
+      "merchant": "Keysgo Discounter ",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "150": {
+      "name": "PlayStation Network Card 150 EUR (ES) PSN Key SPAIN",
+      "base_price": 172.34,
+      "service_fee": 0.0,
+      "pay_price": 172.34,
+      "cashback": 0.0,
+      "net_price": 172.34,
+      "alert_on": "pay",
+      "alert_price": 172.34,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-150-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "200": {
+      "name": "PlayStation Network Card 200 EUR (ES) PSN Key SPAIN",
+      "base_price": 228.66,
+      "service_fee": 0.0,
+      "pay_price": 228.66,
+      "cashback": 0.0,
+      "net_price": 228.66,
+      "alert_on": "pay",
+      "alert_price": 228.66,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-200-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    },
+    "250": {
+      "name": "PlayStation Network Card 250 EUR (ES) PSN Key SPAIN",
+      "base_price": 285.51,
+      "service_fee": 0.0,
+      "pay_price": 285.51,
+      "cashback": 0.0,
+      "net_price": 285.51,
+      "alert_on": "pay",
+      "alert_price": 285.51,
+      "currency": "USD",
+      "url": "https://www.eneba.com/psn-playstation-network-card-250-eur-es-psn-key-spain",
+      "merchant": "Ultimate Choice",
+      "updated_at": "2026-06-29T20:10:32Z"
+    }
+  },
   "alerts": {},
-  "history": {}
+  "history": {
+    "10": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 11.34,
+        "base": 11.34
+      }
+    ],
+    "18": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 23.45,
+        "base": 23.45
+      }
+    ],
+    "20": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 22.52,
+        "base": 22.52
+      }
+    ],
+    "45": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 58.29,
+        "base": 58.29
+      }
+    ],
+    "50": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 54.29,
+        "base": 54.29
+      }
+    ],
+    "55": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 68.86,
+        "base": 68.86
+      }
+    ],
+    "60": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 65.5,
+        "base": 65.5
+      }
+    ],
+    "75": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 93.12,
+        "base": 93.12
+      }
+    ],
+    "80": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 89.28,
+        "base": 89.28
+      }
+    ],
+    "90": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 128.25,
+        "base": 128.25
+      }
+    ],
+    "95": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 135.39,
+        "base": 135.39
+      }
+    ],
+    "100": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 108.05,
+        "base": 108.05
+      }
+    ],
+    "150": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 172.34,
+        "base": 172.34
+      }
+    ],
+    "200": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 228.66,
+        "base": 228.66
+      }
+    ],
+    "250": [
+      {
+        "t": "2026-06-29T20:10:32Z",
+        "p": 285.51,
+        "base": 285.51
+      }
+    ]
+  },
+  "updated_at": "2026-06-29T20:10:32Z"
 }
