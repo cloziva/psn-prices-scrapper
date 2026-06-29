@@ -4,14 +4,16 @@
   "currency": "EUR",
 
   "pricing": {
-    "_comment": "Eneba: eneba_service_fee_eur = tarifa de servicio FIJA (~2,30 EUR; se anade en el checkout y depende del metodo de pago, con monedero Eneba ~0). service_fee_percent = tarifa en % adicional si tu metodo de pago la cobra asi (se suma a la fija; deja 0 si no aplica). count_cashback = usa el cashback EXACTO por producto que scrapea el bot. safety_margin_eur = cuanto mas barato debe ser Eneba que la referencia para avisar (cubre que el cashback tarde o caduque).",
+    "_comment": "Eneba: eneba_service_fee_eur = tarifa de servicio FIJA (~2,30 EUR; se anade en el checkout y depende del metodo de pago, con monedero Eneba ~0). service_fee_percent = tarifa en % adicional si tu metodo de pago la cobra asi (se suma a la fija; deja 0 si no aplica). count_cashback = usa el cashback EXACTO por producto que scrapea el bot. safety_margin_eur = cuanto mas barato debe ser Eneba que la referencia para avisar (cubre que el cashback tarde o caduque). use_live_references = scrapea Loaded/CDKeys + Instant Gaming en cada ejecucion para tener el precio de referencia del dia (recomendado). include_instant_gaming = incluir Instant Gaming ademas de Loaded.",
     "eneba_service_fee_eur": 2.30,
     "service_fee_percent": 0,
     "count_cashback": true,
-    "safety_margin_eur": 1.50
+    "safety_margin_eur": 1.50,
+    "use_live_references": true,
+    "include_instant_gaming": true
   },
 
-  "_comment_reference": "Precio FIJO de tu tienda de referencia (Loaded/CDKeys o Instant Gaming) por importe, en EUR. Solo se vigilan/avisan los importes que pongas aqui. Anade los que te interesen (puedo ayudarte a sacar los precios de Loaded/Instant Gaming, o incluso scrapearlos automaticamente mas adelante).",
+  "_comment_reference": "RESPALDO: precios de referencia fijos por importe (EUR), por si fallara el scraping en vivo de Loaded/Instant Gaming. Con use_live_references=true normalmente NO se usan (mandan los precios en vivo). Puedes dejarlo casi vacio.",
   "reference_prices": {
     "50": 44.99,
     "100": 89.99

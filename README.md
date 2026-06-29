@@ -1,28 +1,36 @@
 # PSN Prices Scrapper
 
 Vigila el precio del **saldo de PlayStation Store (región España)** en **Eneba** y te manda un
-**push gratis al iPhone** (vía [ntfy](https://ntfy.sh)) en cuanto un importe baja del precio que
-tú marques. Se ejecuta solo en **GitHub Actions cada 15 minutos** — sin servidor, sin tener el
-ordenador encendido y **sin coste**.
+**push gratis al iPhone** (vía [ntfy](https://ntfy.sh)) cuando comprar ahí **sale realmente más
+barato** que en tus tiendas de referencia (Loaded/CDKeys e Instant Gaming). Se ejecuta solo en
+**GitHub Actions cada 15 minutos** — sin servidor, sin tener el ordenador encendido y **sin coste**.
 
 ## Cómo funciona
 
 1. Cada 15 min, GitHub Actions ejecuta `scraper/main.py`.
-2. `scrape_eneba.py` hace **un solo GET** a la página de categoría de Eneba y extrae los precios
-   del JSON que la propia página trae incrustado (`__APOLLO_STATE__`). Para cada importe coge el
-   **precio mínimo** (la oferta más barata, no la "recomendada").
-3. `main.py` compara cada precio con tu **umbral** de `config.json`. Si está por debajo, llama a
-   `notify.py`, que manda el push a tu móvil con el **enlace directo de compra**.
-4. El estado (últimos precios, último aviso e histórico) se guarda en `data/state.json` y el
-   workflow lo **commitea** de vuelta al repo. Así no te repite el mismo aviso una y otra vez.
+2. `scrape_eneba.py` hace **un solo GET** a la categoría de Eneba y extrae del JSON incrustado
+   (`__APOLLO_STATE__`) el **precio mínimo** y el **cashback exacto** de cada importe.
+3. `scrape_reference.py` saca el **precio de referencia** del día en **Loaded/CDKeys** (todos los
+   importes en una petición) e **Instant Gaming**, y se queda con el **más barato** por importe.
+4. `main.py` calcula el **precio efectivo** de Eneba y avisa **COMPRAR** si compensa:
+
+   ```
+   efectivo_eneba = precio_base + tarifa_servicio − cashback
+   COMPRAR  si  efectivo_eneba  ≤  precio_referencia − margen_seguridad
+   ```
+
+   Si compensa, `notify.py` manda el push al iPhone con el desglose y el **enlace de compra**.
+5. El estado (precios, último aviso e histórico) se guarda en `data/state.json` y el workflow lo
+   **commitea** de vuelta al repo, para no repetir el mismo aviso.
 
 ```
 scraper/
-  scrape_eneba.py   # GET + parseo del JSON de Eneba  -> [{denom, price_min, url, ...}]
-  notify.py         # POST a ntfy (push al iPhone)
-  main.py           # orquesta: scrape -> comparar umbrales -> avisar -> guardar estado
-  config.json       # importes a vigilar y umbral en € por importe  (PÚBLICO, sin secretos)
-data/state.json     # estado e histórico de precios (se actualiza solo)
+  scrape_eneba.py      # GET + JSON de Eneba -> precio min + cashback por importe
+  scrape_reference.py  # Loaded/CDKeys + Instant Gaming -> precio de referencia (curl_cffi)
+  notify.py            # POST a ntfy (push al iPhone)
+  main.py              # orquesta: scrape -> efectivo vs referencia -> avisar -> guardar estado
+  config.json          # tarifas, margen y respaldos  (PÚBLICO, sin secretos)
+data/state.json        # estado e histórico de precios (se actualiza solo)
 .github/workflows/scrape.yml   # cron cada 15 min
 ```
 
@@ -50,66 +58,53 @@ En el repo: **Settings → Secrets and variables → Actions → New repository 
 - *(Opcional)* `NTFY_TOKEN` y `NTFY_SERVER` solo si proteges el topic con autenticación o usas tu
   propio servidor ntfy.
 
-### 4. Ajusta tus precios objetivo
-Edita `scraper/config.json`. En `thresholds`, cada línea es `"importe": precio_objetivo_en_euros`.
-Te avisa cuando el precio mínimo sea **igual o menor** a ese número. Ejemplo:
+### 4. Ajusta tarifa y margen (opcional)
+El sistema ya es **casi automático**: saca solo el precio de referencia del día (Loaded +
+Instant Gaming), así que normalmente **no tienes que tocar precios objetivo**. Lo único que
+conviene afinar en `scraper/config.json → pricing`:
 
 ```json
-"thresholds": {
-  "80": 66.00,
-  "50": 42.00,
-  "100": 88.00
+"pricing": {
+  "eneba_service_fee_eur": 2.30,   // tu tarifa de servicio en Eneba (mídela 1 vez en el checkout)
+  "service_fee_percent": 0,         // tarifa en % adicional, si tu método de pago la cobra así
+  "count_cashback": true,           // restar el cashback (dato real por producto)
+  "safety_margin_eur": 1.50,        // cuánto más barato debe ser Eneba para avisar
+  "use_live_references": true,      // sacar la referencia en vivo de Loaded + Instant Gaming
+  "include_instant_gaming": true
 }
 ```
-
-Los importes que no pongas aquí **se siguen registrando** (verás su histórico en `state.json`),
-pero **no generan aviso**.
 
 ### 5. Activa el workflow
 - Pestaña **Actions** → si pide habilitarlas, acepta.
 - Abre **scrape-psn-prices** → **Run workflow** para lanzarlo a mano la primera vez.
-- Revisa el log: verás la tabla de precios. Cuando un importe cruce tu umbral, te llegará el push.
-- A partir de ahí corre solo cada 15 min (puede haber retrasos de GitHub; a veces 15–30 min).
+- Revisa el log: verás la tabla con `efectivo`, `referencia` y `ahorro`. Si un importe sale
+  **COMPRAR**, te llega el push. A partir de ahí corre solo cada 15 min (a veces con 15–30 min
+  de retraso de GitHub).
 
-## Precio real: tarifa de servicio y cashback
+## El precio real: tarifa, cashback y referencia
 
-El "precio final real" depende de dos cosas además del precio listado:
-
-- **Cashback** (se detecta solo): cada oferta indica cuánto te devuelve Eneba en
-  **monedero** (normalmente ~5%). Es un dato real que el scraper ya extrae y muestra.
-- **Tarifa de servicio** (no se puede scrapear): Eneba la añade **en el checkout** y
-  **depende del método de pago** (con tarjeta se suma; pagando con **monedero Eneba**
-  suele ser **0**). No aparece en el listado ni en la página de producto, así que se
-  configura como una **estimación** que mides tú una vez.
-
-Se configura en el bloque `pricing` de `scraper/config.json`:
-
-```json
-"pricing": {
-  "service_fee_percent": 0,     // tu tarifa: mídela una vez en el checkout y ponla aquí
-  "count_cashback": true,       // restar el cashback para el precio neto
-  "alert_on": "pay"             // sobre qué precio salta el aviso: base | pay | net
-}
-```
-
-Cálculo por importe:
+No basta el precio listado de Eneba: lo que decide si compras es el **precio efectivo** comparado
+con lo que cuesta en una tienda **de precio fijo** (Loaded/CDKeys, Instant Gaming):
 
 ```
-base   = oferta más barata listada
-tarifa = base × service_fee_percent / 100
-pagas  = base + tarifa                 (lo que sale de tu bolsillo en el checkout)
-neto   = pagas − cashback              (coste efectivo si gastas el cashback)
+efectivo_eneba = precio_base + tarifa_servicio − cashback
+COMPRAR  si  efectivo_eneba  ≤  precio_referencia − margen_seguridad
 ```
 
-- `alert_on: "pay"` (por defecto) → avisa según lo que **pagas** (base + tarifa).
-- `alert_on: "net"` → avisa según el **neto** (descuenta el cashback). Úsalo si quieres
-  que el cashback cuente para decidir el aviso.
-- `alert_on: "base"` → solo el precio listado, sin tarifa ni cashback.
+- **Cashback** (automático): cada oferta de Eneba trae su cashback **exacto** en € (y el % del
+  producto). El bot lo resta del efectivo.
+- **Tarifa de servicio** (configurable): Eneba la añade **en el checkout** y depende del método de
+  pago (con **monedero Eneba** suele ser 0). No es scrapeable; mídela una vez y ponla en
+  `eneba_service_fee_eur`. Para medirla: añade una tarjeta al carrito, ve al checkout, elige tu
+  método de pago y mira la "service fee".
+- **Referencia** (automática): `scrape_reference.py` saca el precio del día de **Loaded/CDKeys**
+  (todos los importes en una petición) e **Instant Gaming**, y usa el **más barato**. Si el
+  scraping fallara, se usan los valores de respaldo de `reference_prices`.
+- **Margen de seguridad**: solo avisa si Eneba es al menos `safety_margin_eur` más barato que la
+  referencia (cubre que el cashback tarde o caduque, o pequeñas fluctuaciones).
 
-**Cómo medir tu tarifa:** añade una tarjeta al carrito en Eneba, ve al checkout, elige tu
-método de pago habitual y mira el % de "service fee" que aparece. Pon ese número en
-`service_fee_percent`. El aviso siempre te muestra el desglose completo (base + tarifa −
-cashback) para que veas el precio real.
+> Nota técnica: loaded.com bloquea la librería `requests` por su huella TLS, así que las
+> referencias se piden con `curl_cffi` (imita a Chrome). Por eso está en `requirements.txt`.
 
 ## Cómo se guardan las claves (repo público)
 
@@ -117,7 +112,7 @@ cashback) para que veas el precio real.
 - El único dato sensible es **`NTFY_TOPIC`** (quien lo sepa puede leer tus avisos o mandarte
   mensajes falsos). Va en **GitHub Actions Secrets**: cifrado, fuera del código y del historial,
   enmascarado en los logs, e **inaccesible para forks** del repo.
-- Los umbrales y el histórico de precios **no son secretos**, por eso sí están en el repo.
+- La configuración (tarifas, margen) y el histórico de precios **no son secretos**, por eso sí están en el repo.
 - El commit del estado lo hace el `GITHUB_TOKEN` integrado del workflow; **no** necesitas crear
   ningún token personal.
 
@@ -126,8 +121,11 @@ cashback) para que veas el precio real.
 ```bash
 pip install -r requirements.txt
 
-# Solo scraping (imprime la tabla de precios actuales de Eneba):
+# Solo scraping de Eneba (precio mínimo + cashback por importe):
 python scraper/scrape_eneba.py
+
+# Solo precios de referencia (Loaded + Instant Gaming, el más barato por importe):
+python scraper/scrape_reference.py
 
 # Flujo completo. En Windows PowerShell:
 $env:NTFY_TOPIC = "tu-topic"
@@ -137,24 +135,19 @@ python scraper/main.py
 python scraper/notify.py "Hola desde mi PC"
 ```
 
-Para forzar un aviso de prueba, baja temporalmente un umbral en `config.json` por encima del
-precio actual, ejecuta `main.py` y comprueba que llega el push. (Borra el cambio luego.)
+Para **forzar un COMPRAR de prueba**: en `config.json` pon `"use_live_references": false` y un
+respaldo alto, p. ej. `"reference_prices": { "50": 999 }`. Ejecuta `main.py` (con `NTFY_TOPIC`
+puesto) y te llegará el push. Deshaz el cambio luego.
 
-## Precios de referencia observados (para calibrar tus umbrales)
+## Ejemplo real (junio 2026)
 
-Snapshot de junio de 2026 (cambian a menudo; solo orientativo):
+| Importe | Eneba efectivo | Referencia (Loaded/IG) | ¿Comprar? |
+|--------:|---------------:|-----------------------:|:--|
+| 50 €    | 47,53 €        | 44,99 € (Loaded)       | ❌ esperar |
+| 100 €   | 92,33 €        | 94,99 € (Loaded)       | ✅ COMPRAR (ahorras ~2,66 €) |
 
-| Importe | Precio mínimo visto |
-|--------:|--------------------:|
-| 10 €    | 9,95 €              |
-| 20 €    | 19,75 €             |
-| 50 €    | 47,62 €             |
-| 60 €    | 57,56 €             |
-| 80 €    | 78,31 €             |
-| 100 €   | 94,77 €             |
-
-Los importes "raros" (45, 75, 90, 150, 200, 250…) suelen estar **por encima** de su valor nominal,
-así que con umbrales razonables simplemente no te avisarán hasta que haya un chollo real.
+Con la tarifa de servicio incluida, Eneba **a menudo no compensa** frente a Loaded; por eso recibes
+pocas alertas, pero las que llegan son chollos de verdad.
 
 ## Si Eneba activa Cloudflare (Plan B)
 
