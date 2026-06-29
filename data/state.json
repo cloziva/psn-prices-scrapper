@@ -554,9 +554,9 @@
       }
     ]
   },
-  "updated_at": "2026-06-29T21:43:57Z",
+  "updated_at": "2026-06-29T22:41:50Z",
   "refs_cache": {
-    "t": "2026-06-29T21:09:37Z",
+    "t": "2026-06-29T22:41:50Z",
     "data": {
       "5": {
         "price": 4.73,
@@ -571,15 +571,33 @@
         "src_currency": "USD"
       },
       "10": {
-        "price": 9.48,
+        "price": 9.5,
         "url": "https://www.instant-gaming.com/en/3567-buy-game-playstation-playstation-network-card-10e-spain/",
         "store": "Instant Gaming",
+        "src_currency": "USD"
+      },
+      "12": {
+        "price": 11.04,
+        "url": "https://www.loaded.com/playstation-network-psn-card-12-eur-spain-cd-key",
+        "store": "Loaded",
+        "src_currency": "USD"
+      },
+      "15": {
+        "price": 14.54,
+        "url": "https://www.loaded.com/playstation-network-psn-card-15-eur-spain-cd-key",
+        "store": "Loaded",
         "src_currency": "USD"
       },
       "18": {
         "price": 16.91,
         "url": "https://www.loaded.com/playstation-network-psn-card-18-eur-spain-cd-key",
         "store": "Loaded",
+        "src_currency": "USD"
+      },
+      "20": {
+        "price": 19.03,
+        "url": "https://www.instant-gaming.com/en/619-buy-playstation-store-gift-card-20eur-eur20-card-playstation-4-playstation-5-game-playstation-store-spain/",
+        "store": "Instant Gaming",
         "src_currency": "USD"
       },
       "25": {
@@ -612,6 +630,24 @@
         "store": "Loaded",
         "src_currency": "USD"
       },
+      "50": {
+        "price": 47.57,
+        "url": "https://www.instant-gaming.com/en/621-buy-playstation-network-card-50eur-50-euros-card-playstation-3-playstation-4-playstation-5-game-playstation-store-spain/",
+        "store": "Instant Gaming",
+        "src_currency": "USD"
+      },
+      "60": {
+        "price": 57.08,
+        "url": "https://www.instant-gaming.com/en/12014-buy-playstation-store-gift-card-60eur-eur60-card-playstation-5-playstation-4-game-playstation-store-spain/",
+        "store": "Instant Gaming",
+        "src_currency": "USD"
+      },
+      "75": {
+        "price": 72.32,
+        "url": "https://www.loaded.com/playstation-network-psn-card-75-eur-spain",
+        "store": "Loaded",
+        "src_currency": "USD"
+      },
       "90": {
         "price": 88.63,
         "url": "https://www.loaded.com/playstation-network-psn-card-90-eur-spain",
@@ -629,40 +665,22 @@
         "url": "https://www.loaded.com/playstation-network-psn-card-120-eur-spain",
         "store": "Loaded",
         "src_currency": "USD"
-      },
-      "20": {
-        "price": 18.96,
-        "url": "https://www.instant-gaming.com/en/619-buy-playstation-store-gift-card-20eur-eur20-card-playstation-4-playstation-5-game-playstation-store-spain/",
-        "store": "Instant Gaming",
-        "src_currency": "USD"
-      },
-      "50": {
-        "price": 47.43,
-        "url": "https://www.instant-gaming.com/en/621-buy-playstation-network-card-50eur-50-euros-card-playstation-3-playstation-4-playstation-5-game-playstation-store-spain/",
-        "store": "Instant Gaming",
-        "src_currency": "USD"
-      },
-      "60": {
-        "price": 56.92,
-        "url": "https://www.instant-gaming.com/en/12014-buy-playstation-store-gift-card-60eur-eur60-card-playstation-5-playstation-4-game-playstation-store-spain/",
-        "store": "Instant Gaming",
-        "src_currency": "USD"
       }
     }
   },
   "ranking": [
     {
-      "denom": 12,
-      "store": "Loaded(config)",
-      "price": 10.49,
-      "discount": 12.6,
-      "approx": false
-    },
-    {
       "denom": 25,
       "store": "Loaded",
       "price": 22.7,
       "discount": 9.2,
+      "approx": true
+    },
+    {
+      "denom": 12,
+      "store": "Loaded",
+      "price": 11.04,
+      "discount": 8.0,
       "approx": true
     },
     {
@@ -674,7 +692,7 @@
     }
   ],
   "best_alert": {
-    "key": "Loaded(config):12",
-    "discount": 12.6
+    "key": "Loaded:25",
+    "discount": 9.2
   }
 }
