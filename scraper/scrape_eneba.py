@@ -33,6 +33,12 @@ _HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
+# Eneba sirve precios en la divisa de la IP del visitante (USD desde un servidor en
+# EE.UU. como los de GitHub). La cookie `exchange` fija la divisa: la forzamos a EUR
+# para ver siempre los precios de Espana, no los del pais del servidor.
+_COOKIES = {"exchange": "EUR"}
+_WANT_CURRENCY = "EUR"
+
 _APOLLO_RE = re.compile(
     r'<script id="__APOLLO_STATE__" type="application/json">(.*?)</script>',
     re.S,
@@ -45,12 +51,18 @@ class EnebaScrapeError(RuntimeError):
     """Se lanza cuando no se puede extraer/parsear el precio (formato cambiado, bloqueo, etc.)."""
 
 
-def _money(node: dict, field_prefix: str) -> dict | None:
-    """Apollo guarda claves parametrizadas como 'price({"currency":"EUR"})'."""
-    for key, value in node.items():
-        if key.startswith(field_prefix) and isinstance(value, dict):
-            return value
-    return None
+def _money(node: dict, field_prefix: str, want_currency: str = _WANT_CURRENCY) -> dict | None:
+    """Devuelve el objeto Money de un campo parametrizado (p. ej. 'price(...)').
+
+    Eneba puede incrustar el precio en varias divisas segun la IP/cookies; aqui
+    preferimos SIEMPRE `want_currency` (EUR) para no leer por error precios en USD.
+    """
+    candidates = [v for k, v in node.items()
+                  if k.startswith(field_prefix) and isinstance(v, dict)]
+    for v in candidates:
+        if v.get("currency") == want_currency:
+            return v
+    return candidates[0] if candidates else None
 
 
 def _cashback(auction: dict) -> float:
@@ -72,7 +84,7 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
     `price_min` y `msrp` van en euros (float). Lanza EnebaScrapeError si algo
     falla en la obtencion o el parseo.
     """
-    resp = requests.get(store_url, headers=_HEADERS, timeout=timeout)
+    resp = requests.get(store_url, headers=_HEADERS, cookies=_COOKIES, timeout=timeout)
     resp.raise_for_status()
     html = resp.text
 
@@ -111,8 +123,11 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
         price = _money(auction, "price(")
         if not price or price.get("amount") is None:
             continue
-        price_min = round(price["amount"] / 100, 2)
         currency = price.get("currency", "EUR")
+        if currency != _WANT_CURRENCY:
+            # Defensa: si pese a la cookie llegara un precio en otra divisa, lo saltamos.
+            continue
+        price_min = round(price["amount"] / 100, 2)
 
         msrp = _money(auction, "msrp(")
         msrp_eur = round(msrp["amount"] / 100, 2) if msrp and msrp.get("amount") else None
