@@ -136,9 +136,13 @@ def fetch_loaded(rates: dict, denoms=None, timeout: int = 30) -> dict[int, dict]
             continue
         if not in_stock or price is None:
             continue  # agotado o sin precio: no lo usamos
-        eur = _to_eur(price, cur, rates)
-        if eur is not None:
-            out[denom] = {"price": eur, "url": url, "store": "Loaded", "src_currency": cur}
+        # CDKeys/Loaded da precios REGIONALES (distintos, no solo otra divisa) fuera de la UE:
+        # convertirlos daria un precio ERRONEO. Por eso solo se usa si llega en EUR nativo
+        # (= se ejecuta desde una IP europea). Desde EE.UU. (GitHub) se omite automaticamente.
+        if cur != "EUR":
+            continue
+        out[denom] = {"price": round(float(price), 2), "url": url,
+                      "store": "Loaded", "src_currency": "EUR"}
         time.sleep(0.4)  # ser educados con su servidor
     return out
 

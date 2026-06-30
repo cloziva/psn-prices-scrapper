@@ -15,27 +15,8 @@
     "include_instant_gaming": true
   },
 
-  "_comment_reference": "RESPALDO: precios de referencia fijos por importe (EUR), por si fallara el scraping en vivo de Loaded/Instant Gaming. Con use_live_references=true normalmente NO se usan (mandan los precios en vivo). Valores capturados en jun-2026 (Loaded/IG, Espana); pueden quedar desactualizados.",
-  "reference_prices": {
-    "5": 4.79,
-    "6": 5.49,
-    "10": 9.49,
-    "12": 10.49,
-    "15": 14.49,
-    "18": 15.49,
-    "20": 18.99,
-    "25": 22.49,
-    "30": 28.99,
-    "35": 33.99,
-    "40": 38.99,
-    "45": 43.99,
-    "50": 44.99,
-    "60": 56.99,
-    "75": 72.99,
-    "90": 88.99,
-    "100": 94.99,
-    "120": 117.99
-  },
+  "_comment_reference": "RESPALDO opcional: precios de referencia fijos por importe (EUR) por si quieres forzar alguno. Vacio = solo datos EN VIVO (recomendado, para no usar precios desactualizados).",
+  "reference_prices": {},
 
   "_comment_thresholds": "OPCIONAL: umbral absoluto en EUR sobre el precio efectivo, para importes que NO tengan precio de referencia. Avisa si efectivo <= valor. Deja {} si no lo usas.",
   "thresholds": {}
