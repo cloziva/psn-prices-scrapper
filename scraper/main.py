@@ -61,8 +61,11 @@ def _age_min(iso: str) -> float:
 
 def _eneba_effective(product: dict, pricing: dict) -> float:
     base = product["price_min"]
+    # La tasa de servicio de Eneba escala con el IMPORTE del card (medido en el checkout):
+    # tasa ~= fijo + % del valor nominal.
+    face = product.get("denom") or base
     fee = float(pricing.get("eneba_fee_fixed_eur", 0) or 0)
-    fee += base * float(pricing.get("eneba_fee_percent", 0) or 0) / 100
+    fee += face * float(pricing.get("eneba_fee_percent", 0) or 0) / 100
     cashback = product.get("cashback", 0.0) or 0.0
     if not pricing.get("count_cashback", True):
         cashback = 0.0
