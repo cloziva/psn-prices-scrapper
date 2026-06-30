@@ -31,7 +31,8 @@ from scrape_reference import fetch_references
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "scraper" / "config.json"
-STATE_PATH = ROOT / "data" / "state.json"
+# El estado puede vivir fuera del repo (util en un servidor: asi `git pull` nunca choca).
+STATE_PATH = Path(os.environ.get("PSN_STATE_PATH") or (ROOT / "data" / "state.json"))
 REF_TTL_MIN = 45
 
 
