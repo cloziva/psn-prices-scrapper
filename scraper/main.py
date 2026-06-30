@@ -144,7 +144,10 @@ def main() -> int:
     fallback_refs = {str(k): float(v) for k, v in (config.get("reference_prices") or {}).items()}
 
     state = _load_json(STATE_PATH, {})
-    on_demand = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    # "Bajo demanda" = ejecucion manual (PC de un clic) o workflow_dispatch en GitHub:
+    # siempre manda el informe del mejor precio del momento.
+    on_demand = bool(os.environ.get("PSN_ON_DEMAND")) or \
+        os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
 
     try:
         products = fetch_prices(store_url)
