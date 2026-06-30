@@ -1,20 +1,92 @@
 {
-  "5": 4.79,
-  "6": 5.49,
-  "10": 9.79,
-  "12": 10.49,
-  "15": 14.49,
-  "18": 15.49,
-  "20": 18.99,
-  "25": 22.49,
-  "30": 28.99,
-  "35": 33.99,
-  "40": 38.99,
-  "45": 43.99,
-  "50": 44.99,
-  "60": 56.99,
-  "75": 72.99,
-  "90": 88.99,
-  "100": 94.99,
-  "120": 117.99
+  "5": {
+    "price": 4.79,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "6": {
+    "price": 5.49,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "10": {
+    "price": 9.79,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "12": {
+    "price": 10.49,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "15": {
+    "price": 14.49,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "18": {
+    "price": 15.49,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "20": {
+    "price": 18.99,
+    "in_stock": true,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "25": {
+    "price": 22.49,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "30": {
+    "price": 28.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "35": {
+    "price": 33.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "40": {
+    "price": 38.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "45": {
+    "price": 43.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "50": {
+    "price": 44.99,
+    "in_stock": true,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "60": {
+    "price": 56.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "75": {
+    "price": 72.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "90": {
+    "price": 88.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "100": {
+    "price": 94.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  },
+  "120": {
+    "price": 117.99,
+    "in_stock": false,
+    "updated_at": "2026-06-30T01:29:42Z"
+  }
 }

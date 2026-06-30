@@ -147,6 +147,24 @@ def fetch_loaded(rates: dict, denoms=None, timeout: int = 30) -> dict[int, dict]
     return out
 
 
+def fetch_loaded_detailed(denoms=None, timeout: int = 30) -> dict[int, dict]:
+    """{denom: {'price'(EUR), 'in_stock': bool, 'url'}} para cada ficha que se pueda leer en EUR.
+    INCLUYE las agotadas (in_stock=False) para poder marcarlas; omite las que fallen al cargar
+    o no lleguen en EUR (= IP no europea)."""
+    rates = _fx_rates(timeout)
+    out: dict[int, dict] = {}
+    for denom, url in _selected(LOADED_URLS, denoms).items():
+        try:
+            price, cur, in_stock = _product_price(_get(url, timeout))
+        except Exception:  # noqa: BLE001
+            continue
+        if price is None or cur != "EUR":
+            continue
+        out[denom] = {"price": round(float(price), 2), "in_stock": bool(in_stock), "url": url}
+        time.sleep(0.4)
+    return out
+
+
 def fetch_instant_gaming(rates: dict, denoms=None, timeout: int = 30) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for denom, url in _selected(INSTANT_GAMING_URLS, denoms).items():

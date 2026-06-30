@@ -29,7 +29,7 @@ from pathlib import Path
 
 import notify
 from scrape_eneba import DEFAULT_STORE_URL, fetch_prices
-from scrape_reference import LOADED_URLS, _fx_rates, fetch_instant_gaming, fetch_loaded
+from scrape_reference import LOADED_URLS, _fx_rates, fetch_instant_gaming, fetch_loaded_detailed
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "scraper" / "config.json"
@@ -73,37 +73,52 @@ def _eneba_effective(product: dict, pricing: dict) -> float:
     return round(base + fee - cashback, 2)
 
 
-def _load_loaded() -> dict[int, float]:
+def _load_loaded() -> dict[int, dict]:
+    """{denom: {'price': float, 'in_stock': bool}}. Acepta tambien numeros sueltos (edicion
+    manual) tratandolos como disponibles."""
     data = _load_json(LOADED_STORE_PATH, {})
-    out: dict[int, float] = {}
+    out: dict[int, dict] = {}
     for k, v in data.items():
         try:
-            if v is not None:
-                out[int(k)] = float(v)
+            denom = int(k)
         except (TypeError, ValueError):
-            pass
+            continue
+        if isinstance(v, dict) and v.get("price") is not None:
+            out[denom] = {"price": float(v["price"]), "in_stock": bool(v.get("in_stock", True))}
+        elif isinstance(v, (int, float)):
+            out[denom] = {"price": float(v), "in_stock": True}  # numero suelto = mostrar
     return out
 
 
-def _save_loaded(prices: dict[int, float]) -> None:
+def _save_loaded(prices: dict[int, dict]) -> None:
     LOADED_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    out = {}
+    for denom in sorted(prices):
+        e = prices[denom]
+        entry = {"price": round(float(e["price"]), 2), "in_stock": bool(e.get("in_stock", True))}
+        if e.get("updated_at"):
+            entry["updated_at"] = e["updated_at"]
+        out[str(denom)] = entry
     with open(LOADED_STORE_PATH, "w", encoding="utf-8") as fh:
-        json.dump({str(k): round(prices[k], 2) for k in sorted(prices)}, fh, ensure_ascii=False, indent=2)
+        json.dump(out, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
 
 
-def _refresh_loaded(stored: dict[int, float]) -> tuple[dict[int, float], int]:
-    """Re-scrapea Loaded EN VIVO (solo fiable desde IP europea) y fusiona en lo guardado:
-    actualiza las que esten en stock; las demas mantienen su ultimo valor."""
+def _refresh_loaded(stored: dict[int, dict]) -> tuple[dict[int, dict], int]:
+    """Re-scrapea Loaded EN VIVO (precio + stock; solo fiable desde IP europea) y fusiona:
+    actualiza precio Y disponibilidad de las leidas; las que fallen mantienen su ultimo estado."""
     try:
-        live = fetch_loaded(_fx_rates())  # solo EUR nativo + en stock
+        detailed = fetch_loaded_detailed()  # {denom: {price(EUR), in_stock, url}}
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] no se pudo refrescar Loaded: {exc} (mantengo lo guardado)")
         return stored, 0
+    now = _now()
     updated = dict(stored)
-    for denom, info in live.items():
-        updated[denom] = float(info["price"])
-    return updated, len(live)
+    for denom, info in detailed.items():
+        updated[denom] = {"price": float(info["price"]), "in_stock": bool(info["in_stock"]),
+                          "updated_at": now}
+    n_stock = sum(1 for info in detailed.values() if info["in_stock"])
+    return updated, n_stock
 
 
 def _get_instant_gaming(state: dict, force_fresh: bool, pricing: dict) -> dict[int, dict]:
@@ -129,9 +144,11 @@ def _build_offers(by_denom: dict, ig: dict, loaded_prices: dict, pricing: dict) 
     for denom, info in ig.items():  # Instant Gaming (oficial, en vivo)
         offers.append({"store": "Instant Gaming", "official": True, "denom": int(denom),
                        "price": float(info["price"]), "url": info.get("url", "")})
-    for denom, price in loaded_prices.items():  # Loaded (oficial, guardado)
+    for denom, entry in loaded_prices.items():  # Loaded (oficial, guardado)
+        if not entry.get("in_stock"):
+            continue  # agotado: no se puede comprar -> no aparece
         offers.append({"store": "Loaded", "official": True, "denom": int(denom),
-                       "price": float(price), "url": LOADED_URLS.get(int(denom), "")})
+                       "price": float(entry["price"]), "url": LOADED_URLS.get(int(denom), "")})
     for o in offers:
         o["ratio"] = round(o["price"] / o["denom"], 4)
         o["discount"] = round((1 - o["ratio"]) * 100, 1)
@@ -194,12 +211,12 @@ def main() -> int:
     # Loaded: persistente. Se refresca en vivo SOLO si lo pides (run.bat en tu PC espanol).
     loaded_prices = _load_loaded()
     if refresh_loaded:
-        loaded_prices, n_live = _refresh_loaded(loaded_prices)
+        loaded_prices, n_stock = _refresh_loaded(loaded_prices)
         _save_loaded(loaded_prices)
-        print(f"Loaded REFRESCADO en vivo: {n_live} importes en stock actualizados "
-              f"(total guardados: {len(loaded_prices)}).")
+        print(f"Loaded REFRESCADO en vivo: {n_stock} en stock / {len(loaded_prices)} leidos.")
     else:
-        print(f"Loaded (precios guardados): {len(loaded_prices)} importes.")
+        n_stock = sum(1 for e in loaded_prices.values() if e.get("in_stock"))
+        print(f"Loaded (guardado): {n_stock} en stock / {len(loaded_prices)} importes.")
 
     ig = _get_instant_gaming(state, force_fresh=on_demand, pricing=pricing)
     offers = _build_offers(by_denom, ig, loaded_prices, pricing)
