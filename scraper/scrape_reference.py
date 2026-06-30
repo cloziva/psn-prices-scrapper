@@ -30,7 +30,9 @@ from curl_cffi import requests as cffi
 _HEADERS = {"Accept-Language": "es-ES,es;q=0.9,en;q=0.8"}
 _IMPERSONATE = "chrome"
 
-# Loaded/CDKeys: ficha de producto de Espana por importe.
+# Loaded/CDKeys: ficha de producto por importe (Product JSON-LD: precio fiable + stock + divisa).
+# (La pagina de categoria trae un ItemList inconsistente, por eso vamos por ficha. Y desde una IP
+# NO europea geolocaliza la divisa/el catalogo; por eso el proyecto corre desde una IP europea.)
 LOADED_URLS = {
     5: "https://www.loaded.com/playstation-network-psn-card-5-eur-spain-cd-key",
     6: "https://www.loaded.com/playstation-network-psn-card-6-eur-spain-cd-key",
@@ -66,7 +68,10 @@ _FX_URL = "https://api.frankfurter.app/latest?base=EUR"
 
 _LDJSON_RE = re.compile(r'<script type="application/ld\+json">(.*?)</script>', re.S)
 _IG_PRICE_RE = re.compile(r'itemprop="price"[^>]*content="([0-9.]+)"', re.I)
+_IG_PRICE_EUR_RE = re.compile(r'data-price-eur="([0-9.]+)"', re.I)  # IG incrusta el precio en EUR
 _IG_CURRENCY_RE = re.compile(r'itemprop="priceCurrency"[^>]*content="([A-Z]{3})"', re.I)
+_IG_AVAIL_RE = re.compile(r'itemprop="availability"[^>]*content="[^"]*?(InStock|OutOfStock)', re.I)
+_DENOM_RE = re.compile(r"(\d+)\s*EUR", re.I)
 
 
 def _get(url: str, timeout: int = 30) -> str:
@@ -97,7 +102,7 @@ def _to_eur(amount, currency: str, rates: dict):
 
 
 def _product_price(html: str):
-    """(price, currency) del primer Product JSON-LD de la pagina. (None, None) si no hay."""
+    """(price, currency, in_stock) del primer Product JSON-LD. (None, None, True) si no hay."""
     for block in _LDJSON_RE.findall(html):
         try:
             data = json.loads(block)
@@ -111,8 +116,10 @@ def _product_price(html: str):
                 offers = offers[0] if offers else {}
             price = offers.get("price") or offers.get("lowPrice")
             if price is not None:
-                return price, offers.get("priceCurrency") or "EUR"
-    return None, None
+                avail = str(offers.get("availability") or "")
+                in_stock = "OutOfStock" not in avail  # disponible salvo que diga lo contrario
+                return price, offers.get("priceCurrency") or "EUR", in_stock
+    return None, None, True
 
 
 def _selected(mapping: dict, denoms) -> dict:
@@ -120,13 +127,16 @@ def _selected(mapping: dict, denoms) -> dict:
 
 
 def fetch_loaded(rates: dict, denoms=None, timeout: int = 30) -> dict[int, dict]:
+    """Una ficha por importe (fiable). Solo en stock y convertido a EUR."""
     out: dict[int, dict] = {}
     for denom, url in _selected(LOADED_URLS, denoms).items():
         try:
-            price, cur = _product_price(_get(url, timeout))
+            price, cur, in_stock = _product_price(_get(url, timeout))
         except Exception:  # noqa: BLE001 - si una ficha falla, seguimos
             continue
-        eur = _to_eur(price, cur, rates) if price is not None else None
+        if not in_stock or price is None:
+            continue  # agotado o sin precio: no lo usamos
+        eur = _to_eur(price, cur, rates)
         if eur is not None:
             out[denom] = {"price": eur, "url": url, "store": "Loaded", "src_currency": cur}
         time.sleep(0.4)  # ser educados con su servidor
@@ -140,13 +150,22 @@ def fetch_instant_gaming(rates: dict, denoms=None, timeout: int = 30) -> dict[in
             html = _get(url, timeout)
         except Exception:  # noqa: BLE001
             continue
-        m = _IG_PRICE_RE.search(html)
-        cur = _IG_CURRENCY_RE.search(html)
-        if m:
-            src = cur.group(1).upper() if cur else "EUR"
-            eur = _to_eur(m.group(1), src, rates)
-            if eur is not None:
-                out[denom] = {"price": eur, "url": url, "store": "Instant Gaming", "src_currency": src}
+        avail = _IG_AVAIL_RE.search(html)
+        if avail and avail.group(1).lower() == "outofstock":
+            time.sleep(0.4)
+            continue  # agotado
+        eur_attr = _IG_PRICE_EUR_RE.search(html)  # IG suele incrustar el precio en EUR
+        if eur_attr:
+            out[denom] = {"price": round(float(eur_attr.group(1)), 2), "url": url,
+                          "store": "Instant Gaming", "src_currency": "EUR"}
+        else:
+            m = _IG_PRICE_RE.search(html)
+            cur = _IG_CURRENCY_RE.search(html)
+            if m:
+                src = cur.group(1).upper() if cur else "EUR"
+                eur = _to_eur(m.group(1), src, rates)
+                if eur is not None:
+                    out[denom] = {"price": eur, "url": url, "store": "Instant Gaming", "src_currency": src}
         time.sleep(0.4)
     return out
 

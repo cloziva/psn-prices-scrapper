@@ -4,12 +4,13 @@
   "currency": "EUR",
 
   "pricing": {
-    "_comment": "El bot rankea TODAS las ofertas (todas las tiendas y todos los importes) por euro-gastado-por-euro-de-saldo y avisa de la MEJOR. eneba_service_fee_eur = tarifa fija de Eneba (~2,30 EUR; con monedero Eneba ~0). service_fee_percent = % adicional si tu pago lo cobra asi. count_cashback = restar el cashback exacto de Eneba. min_discount_percent = solo avisa si el mejor descuento llega a este %. top_n = cuantas ofertas listar en el aviso. use_live_references/include_instant_gaming = tiendas de referencia.",
-    "eneba_service_fee_eur": 2.30,
-    "service_fee_percent": 0,
+    "_comment": "Tiendas OFICIALES (Loaded/CDKeys, Instant Gaming) = referencia principal (precio fijo, fiable). Eneba = marketplace (con tarifa de servicio variable y cashback). La tarifa de Eneba NO es fija: escala con el importe -> se modela como eneba_fee_fixed_eur + eneba_fee_percent% del importe (PROVISIONAL: ajustar con datos reales del checkout). count_cashback resta el cashback exacto. min_discount_percent = descuento minimo para avisar. eneba_worth_extra_percent = cuantos puntos de descuento debe sacarle Eneba a la mejor oficial para que compense el marketplace. top_n = ofertas a listar.",
+    "eneba_fee_fixed_eur": 0.40,
+    "eneba_fee_percent": 1.9,
     "count_cashback": true,
     "min_discount_percent": 8,
-    "top_n": 3,
+    "eneba_worth_extra_percent": 2.0,
+    "top_n": 4,
     "use_live_references": true,
     "include_instant_gaming": true
   },

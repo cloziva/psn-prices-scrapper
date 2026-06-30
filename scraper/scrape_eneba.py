@@ -120,6 +120,10 @@ def fetch_prices(store_url: str = DEFAULT_STORE_URL, timeout: int = 30) -> list[
         if not isinstance(auction, dict):
             continue
 
+        # Solo ofertas realmente disponibles para comprar (no agotadas).
+        if not auction.get("isInStock", False) or not auction.get("isAddableToCart", True):
+            continue
+
         price = _money(auction, "price(")
         if not price or price.get("amount") is None:
             continue
