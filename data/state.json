@@ -554,7 +554,7 @@
       }
     ]
   },
-  "updated_at": "2026-07-01T10:33:18Z",
+  "updated_at": "2026-07-01T13:22:06Z",
   "refs_cache": {
     "t": "2026-06-30T00:52:50Z",
     "data": {
@@ -586,6 +586,13 @@
   },
   "ranking": [
     {
+      "denom": 60,
+      "store": "Eneba",
+      "price": 53.85,
+      "discount": 10.3,
+      "official": false
+    },
+    {
       "denom": 50,
       "store": "Loaded",
       "price": 44.99,
@@ -593,10 +600,10 @@
       "official": true
     },
     {
-      "denom": 60,
+      "denom": 80,
       "store": "Eneba",
-      "price": 55.83,
-      "discount": 7.0,
+      "price": 72.79,
+      "discount": 9.0,
       "official": false
     },
     {
@@ -605,13 +612,6 @@
       "price": 46.59,
       "discount": 6.8,
       "official": false
-    },
-    {
-      "denom": 100,
-      "store": "Eneba",
-      "price": 94.51,
-      "discount": 5.5,
-      "official": false
     }
   ],
   "best_alert": {
@@ -619,7 +619,7 @@
     "discount": 10.0
   },
   "ig_cache": {
-    "t": "2026-07-01T10:33:18Z",
+    "t": "2026-07-01T13:22:06Z",
     "data": {
       "10": {
         "price": 9.49,
