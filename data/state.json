@@ -554,7 +554,7 @@
       }
     ]
   },
-  "updated_at": "2026-07-01T18:14:45Z",
+  "updated_at": "2026-07-01T20:15:38Z",
   "refs_cache": {
     "t": "2026-06-30T00:52:50Z",
     "data": {
@@ -593,13 +593,6 @@
       "official": true
     },
     {
-      "denom": 80,
-      "store": "Eneba",
-      "price": 72.79,
-      "discount": 9.0,
-      "official": false
-    },
-    {
       "denom": 60,
       "store": "Eneba",
       "price": 55.83,
@@ -612,6 +605,13 @@
       "price": 46.59,
       "discount": 6.8,
       "official": false
+    },
+    {
+      "denom": 100,
+      "store": "Eneba",
+      "price": 93.3,
+      "discount": 6.7,
+      "official": false
     }
   ],
   "best_alert": {
@@ -619,7 +619,7 @@
     "discount": 10.0
   },
   "ig_cache": {
-    "t": "2026-07-01T18:14:45Z",
+    "t": "2026-07-01T20:15:38Z",
     "data": {
       "10": {
         "price": 9.49,
@@ -630,6 +630,12 @@
       "20": {
         "price": 18.99,
         "url": "https://www.instant-gaming.com/en/619-buy-playstation-store-gift-card-20eur-eur20-card-playstation-4-playstation-5-game-playstation-store-spain/",
+        "store": "Instant Gaming",
+        "src_currency": "EUR"
+      },
+      "35": {
+        "price": 33.99,
+        "url": "https://www.instant-gaming.com/en/620-buy-playstation-network-card-35eur-35-euros-card-playstation-3-playstation-4-playstation-5-game-playstation-store-spain/",
         "store": "Instant Gaming",
         "src_currency": "EUR"
       },
