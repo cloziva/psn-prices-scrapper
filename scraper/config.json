@@ -1,14 +1,14 @@
 {
-  "_comment": "Avisa COMPRAR cuando el precio EFECTIVO de Eneba (base + tarifa - cashback) sea mas barato que tu tienda de referencia (Loaded/CDKeys, Instant Gaming) menos un margen de seguridad. Edita 'reference_prices' y 'pricing'.",
+  "_comment": "REGLA: se compara por % de descuento. La referencia es el MEJOR % de descuento entre las ofertas OFICIALES EN STOCK (Loaded/CDKeys, Instant Gaming), una sola cifra global. Se avisa de una oferta de Eneba cuando su % supera esa referencia (aunque sea otro importe). Solo cuentan ofertas en stock.",
   "store_url": "https://www.eneba.com/store/psn-gift-cards/spain",
   "currency": "EUR",
 
   "pricing": {
-    "_comment": "Tiendas OFICIALES (Loaded/CDKeys, Instant Gaming) = referencia principal (precio fijo, fiable). Eneba = marketplace (con tarifa de servicio variable y cashback). La tarifa de Eneba NO es fija: escala con el importe -> se modela como eneba_fee_fixed_eur + eneba_fee_percent% del importe (PROVISIONAL: ajustar con datos reales del checkout). count_cashback resta el cashback exacto. min_discount_percent = descuento minimo para avisar. eneba_worth_extra_percent = cuantos puntos de descuento debe sacarle Eneba a la mejor oficial para que compense el marketplace. top_n = ofertas a listar.",
+    "_comment": "Eneba tasa = eneba_fee_fixed_eur + eneba_fee_percent% del importe (ajustado a datos reales). count_cashback resta el cashback exacto. deal_margin_percent = cuantos PUNTOS PORCENTUALES debe superar Eneba al mejor descuento oficial para avisar (0 = con superarlo basta; sube el numero para menos ruido). top_n = ofertas a listar en el informe.",
     "eneba_fee_fixed_eur": 0.41,
     "eneba_fee_percent": 1.91,
     "count_cashback": true,
-    "deal_margin_eur": 0.30,
+    "deal_margin_percent": 0.5,
     "top_n": 5,
     "use_live_references": true,
     "include_instant_gaming": true

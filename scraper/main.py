@@ -181,7 +181,7 @@ def main() -> int:
     config = _load_json(CONFIG_PATH, {})
     store_url = config.get("store_url", DEFAULT_STORE_URL)
     pricing = config.get("pricing") or {}
-    deal_margin = float(pricing.get("deal_margin_eur", 0.30))
+    deal_margin_pct = float(pricing.get("deal_margin_percent", 0.5))
     top_n = int(pricing.get("top_n", 5))
 
     state = _load_json(STATE_PATH, {})
@@ -243,41 +243,46 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             print(f"[warn] fallo al notificar: {exc}")
     else:
-        # UN AVISO POR CADA importe cuyo mejor precio COMPRABLE este por debajo de su referencia
-        # (el precio de la tienda oficial mas barata: Loaded o Instant Gaming) para ese importe.
+        # === REGLA CENTRAL DEL PROYECTO (no cambiar sin permiso de Carlos) ==================
+        # Todo se compara por % DE DESCUENTO. La referencia es el MEJOR % de descuento entre las
+        # ofertas OFICIALES EN STOCK (Loaded / Instant Gaming): una sola cifra global, sin importar
+        # el importe. Se avisa de una oferta de ENEBA cuando su % de descuento SUPERA esa referencia
+        # (aunque sea otro importe: p. ej. un 40 EUR con mas % que el mejor oficial, que es el 50 EUR).
+        # Solo cuentan ofertas EN STOCK. Un aviso por importe (anti-spam: repite solo si mejora el %).
+        # ================================================================================
         deal_alerts = state.setdefault("deal_alerts", {})
-        buyable: dict[int, dict] = {}
-        for o in offers:  # 'offers' ya son SOLO ofertas en stock
-            d = o["denom"]
-            if d not in buyable or o["price"] < buyable[d]["price"]:
-                buyable[d] = o
-        for denom in sorted(buyable):
-            best = buyable[denom]
-            refs = []
-            if denom in loaded_prices:
-                refs.append((float(loaded_prices[denom]["price"]), "Loaded"))
-            if denom in ig:
-                refs.append((float(ig[denom]["price"]), "Instant Gaming"))
-            if not refs:
-                continue  # sin referencia oficial para ese importe
-            ref_price, ref_store = min(refs, key=lambda r: r[0])
+
+        # Referencia = mejor % de descuento entre las oficiales EN STOCK ('offers' ya son en-stock).
+        official_offers = [o for o in offers if o["official"]]
+        best_official = max(official_offers, key=lambda o: o["discount"]) if official_offers else None
+        bench = best_official["discount"] if best_official else None
+
+        # Mejor oferta de Eneba por importe.
+        eneba_best: dict[int, dict] = {}
+        for o in offers:
+            if o["official"]:
+                continue
+            if o["denom"] not in eneba_best or o["discount"] > eneba_best[o["denom"]]["discount"]:
+                eneba_best[o["denom"]] = o
+
+        for denom in sorted(eneba_best):
+            o = eneba_best[denom]
             key = str(denom)
-            if best["price"] <= ref_price - deal_margin:
+            if bench is not None and o["discount"] >= bench + deal_margin_pct:
                 last = deal_alerts.get(key)
-                if last is None or best["price"] < float(last) - 0.001:  # nuevo o mas barato
-                    saving = round(ref_price - best["price"], 2)
-                    body = (f"{denom} EUR en {best['store']} a {_fmt(best['price'])} EUR\n"
-                            f"por debajo de {ref_store} ({_fmt(ref_price)} EUR) -> ahorras {_fmt(saving)} EUR\n"
-                            f"{best['url']}")
+                if last is None or o["discount"] > float(last) + 0.01:  # nuevo o mejor %
+                    body = (f"Eneba {denom} EUR a {_fmt(o['price'])} EUR = -{_fmt(o['discount'])}%\n"
+                            f"mejor % que el mejor oficial ({best_official['store']} "
+                            f"{best_official['denom']} EUR, -{_fmt(bench)}%)\n{o['url']}")
                     try:
-                        if notify.send(f"Chollo PSN {denom} EUR", body, url=best["url"] or None,
-                                       priority="high", tags="money_with_wings"):
-                            deal_alerts[key] = best["price"]
+                        if notify.send(f"Chollo PSN {denom} EUR (-{_fmt(o['discount'])}%)", body,
+                                       url=o["url"] or None, priority="high", tags="money_with_wings"):
+                            deal_alerts[key] = o["discount"]
                             sent.append(f"{denom}EUR")
                     except Exception as exc:  # noqa: BLE001
                         print(f"[warn] fallo al notificar {denom} EUR: {exc}")
             else:
-                deal_alerts.pop(key, None)  # ya no hay chollo: rearmar
+                deal_alerts.pop(key, None)  # ya no supera al mejor oficial: rearmar
 
     state["ranking"] = [{"denom": o["denom"], "store": o["store"], "price": o["price"],
                          "discount": o["discount"], "official": o["official"]} for o in offers[:top_n]]
