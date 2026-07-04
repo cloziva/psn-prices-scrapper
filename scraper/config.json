@@ -8,9 +8,8 @@
     "eneba_fee_fixed_eur": 0.41,
     "eneba_fee_percent": 1.91,
     "count_cashback": true,
-    "min_discount_percent": 8,
-    "eneba_worth_extra_percent": 2.0,
-    "top_n": 4,
+    "deal_margin_eur": 0.30,
+    "top_n": 5,
     "use_live_references": true,
     "include_instant_gaming": true
   },
