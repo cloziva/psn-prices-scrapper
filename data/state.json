@@ -554,7 +554,7 @@
       }
     ]
   },
-  "updated_at": "2026-07-17T10:03:37Z",
+  "updated_at": "2026-07-17T12:15:49Z",
   "refs_cache": {
     "t": "2026-06-30T00:52:50Z",
     "data": {
@@ -614,10 +614,10 @@
       "official": false
     },
     {
-      "denom": 10,
+      "denom": 60,
       "store": "Eneba",
-      "price": 9.15,
-      "discount": 8.5,
+      "price": 55.76,
+      "discount": 7.1,
       "official": false
     }
   ],
@@ -626,7 +626,7 @@
     "discount": 10.0
   },
   "ig_cache": {
-    "t": "2026-07-17T09:53:29Z",
+    "t": "2026-07-17T12:05:21Z",
     "data": {
       "10": {
         "price": 9.49,
